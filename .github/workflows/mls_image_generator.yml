@@ -15,15 +15,13 @@ jobs:
         run: |
           set -euo pipefail
 
-          echo "===== MLS IMAGE GENERATOR ====="
-
           TOPIC="How to Read a Lipid Panel"
           CATEGORY="Lipids"
           ANGLE="How to Read / Interpretation"
           TITLE="How to Read LDL, HDL and Triglycerides"
 
+          echo "===== MLS IMAGE GENERATOR ====="
           echo ""
-          echo "===== SELECTED INPUT ====="
           echo "Topic: $TOPIC"
           echo "Category: $CATEGORY"
           echo "Angle: $ANGLE"
@@ -36,7 +34,7 @@ jobs:
           echo "Resolution: High resolution"
 
           echo ""
-          echo "===== IMAGE DESIGN ====="
+          echo "===== DESIGN STYLE ====="
           echo "Professional medical infographic"
           echo "Text-dominant layout"
           echo "Clean clinical appearance"
@@ -46,10 +44,9 @@ jobs:
           echo "Large bold readable typography"
           echo "High contrast text"
           echo "Minimal realistic medical visuals"
-          echo "No cartoons"
+          echo "No cartoon elements"
           echo "No stickers"
           echo "No unnecessary decorative elements"
-          echo "No excessive empty space"
 
           echo ""
           echo "===== TOP BANNER ====="
@@ -60,32 +57,27 @@ jobs:
           echo "Your lipid panel has several numbers. Which ones actually matter?"
 
           echo ""
-          echo "===== SECTION 1 ====="
-          echo "LDL CHOLESTEROL"
+          echo "===== LDL CHOLESTEROL ====="
           echo "LDL is one of the main atherogenic cholesterol measures used in cardiovascular risk assessment."
           echo "Interpretation depends on overall cardiovascular risk and clinical context."
 
           echo ""
-          echo "===== SECTION 2 ====="
-          echo "HDL CHOLESTEROL"
+          echo "===== HDL CHOLESTEROL ====="
           echo "HDL is one component of the lipid profile."
           echo "HDL alone should not be used to determine overall cardiovascular risk."
 
           echo ""
-          echo "===== SECTION 3 ====="
-          echo "TRIGLYCERIDES"
+          echo "===== TRIGLYCERIDES ====="
           echo "Triglycerides measure a type of fat in the blood."
           echo "Very high levels have clinical significance and are associated with pancreatitis risk."
 
           echo ""
-          echo "===== SECTION 4 ====="
-          echo "TOTAL CHOLESTEROL"
+          echo "===== TOTAL CHOLESTEROL ====="
           echo "Total cholesterol represents cholesterol carried in several lipoprotein particles."
           echo "Interpret it together with the other lipid measurements."
 
           echo ""
-          echo "===== SECTION 5 ====="
-          echo "THE COMPLETE PATTERN"
+          echo "===== THE COMPLETE PATTERN ====="
           echo "Do not judge cardiovascular risk from one lipid value alone."
           echo "Interpret the complete lipid profile with overall cardiovascular risk and clinical context."
 
@@ -101,99 +93,19 @@ jobs:
           echo "READ THE COMPLETE LIPID PATTERN, NOT ONE NUMBER ALONE"
 
           echo ""
-          echo "===== IMAGE GENERATION PROMPT ====="
-
-          cat <<'PROMPT'
-Create a professional 4:5 vertical medical educational infographic titled:
-
-"How to Read LDL, HDL and Triglycerides"
-
-Design requirements:
-- 4:5 vertical composition
-- High-resolution educational infographic
-- Professional clinical medical style
-- Light medical background
-- Dark top banner
-- Dark section banners
-- Large bold highly readable typography
-- Text-dominant design
-- High contrast
-- Clean spacing
-- Minimal realistic laboratory and lipid-panel visuals
-- Supporting visuals must remain secondary to the text
-- No cartoon graphics
-- No stickers
-- No unnecessary decorative elements
-- No excessive empty space
-
-Top banner:
-HOW TO READ LDL, HDL AND TRIGLYCERIDES
-
-Hook:
-"Your lipid panel has several numbers. Which ones actually matter?"
-
-Section 1:
-LDL CHOLESTEROL
-
-Explain:
-"LDL is one of the main atherogenic cholesterol measures used in cardiovascular risk assessment."
-
-Add:
-"Interpretation depends on overall cardiovascular risk and clinical context."
-
-Section 2:
-HDL CHOLESTEROL
-
-Explain:
-"HDL is one component of the lipid profile."
-
-Add:
-"HDL alone should not be used to determine overall cardiovascular risk."
-
-Section 3:
-TRIGLYCERIDES
-
-Explain:
-"Triglycerides measure a type of fat in the blood."
-
-Add:
-"Very high levels have clinical significance and are associated with pancreatitis risk."
-
-Section 4:
-TOTAL CHOLESTEROL
-
-Explain:
-"Total cholesterol represents cholesterol carried in several lipoprotein particles."
-
-Add:
-"Interpret it together with the other lipid measurements."
-
-Section 5:
-THE COMPLETE PATTERN
-
-Explain:
-"Do not judge cardiovascular risk from one lipid value alone."
-
-Add:
-"Interpret the complete lipid profile with overall cardiovascular risk and clinical context."
-
-Accuracy:
-- Do not show one universal treatment target.
-- Separate laboratory reference ranges from treatment targets.
-- Do not diagnose cardiovascular disease from a lipid panel alone.
-- Do not claim HDL alone determines cardiovascular protection.
-
-Bottom banner:
-READ THE COMPLETE LIPID PATTERN, NOT ONE NUMBER ALONE
-
-Ensure every word is spelled correctly.
-Keep all text inside safe margins.
-Prioritize readability over decorative design.
-PROMPT
-
-          echo ""
-          echo "===== IMAGE GENERATION PROMPT READY ====="
-          echo "The final prompt above is ready for image generation."
+          echo "===== IMAGE PROMPT ====="
+          echo "Create a professional 4:5 vertical medical educational infographic."
+          echo "Title: How to Read LDL, HDL and Triglycerides."
+          echo "Use a light medical background with dark top and section banners."
+          echo "Use large bold highly readable typography."
+          echo "Make the design text-dominant and clinical."
+          echo "Explain LDL cholesterol, HDL cholesterol, triglycerides, total cholesterol, and the complete lipid pattern."
+          echo "Use small realistic laboratory or lipid-panel visuals."
+          echo "Keep visuals secondary to written information."
+          echo "Do not use cartoon graphics, stickers, or unnecessary decorative elements."
+          echo "Do not imply that one lipid value alone determines cardiovascular risk."
+          echo "Do not use a universal treatment target."
+          echo "End with: READ THE COMPLETE LIPID PATTERN, NOT ONE NUMBER ALONE"
 
           echo ""
           echo "===== MLS IMAGE GENERATOR COMPLETE ====="
