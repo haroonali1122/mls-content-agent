@@ -25,14 +25,13 @@ jobs:
           URL="https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/posts"
 
           mkdir -p data
-
-          echo '[]' > data/mls_posts.json
+          rm -f /tmp/mls_posts.jsonl
 
           for PAGE in 1 2 3 4 5; do
             echo "Reading page ${PAGE}..."
 
             RESPONSE=$(curl -sS --get "$URL" \
-              --data-urlencode "fields=id,message,created_time" \
+              --data-urlencode "fields=id,message,created_time,shares" \
               --data-urlencode "limit=100" \
               --data-urlencode "access_token=${META_PAGE_ACCESS_TOKEN}")
 
@@ -54,13 +53,21 @@ jobs:
             URL="$NEXT_URL"
           done
 
-          if [ -f /tmp/mls_posts.jsonl ]; then
-            jq -s 'unique_by(.id) | sort_by(.created_time) | reverse' \
-              /tmp/mls_posts.jsonl > data/mls_posts.json
-          fi
+          jq -s '
+            unique_by(.id)
+            | map(
+                .shares_count = (.shares.count // 0)
+                | del(.shares)
+              )
+            | sort_by(.created_time)
+            | reverse
+          ' /tmp/mls_posts.jsonl > data/mls_posts.json
 
           echo "Collected posts:"
           jq 'length' data/mls_posts.json
+
+          echo "Posts with share counts:"
+          jq '[.[] | select(.shares_count != null)] | length' data/mls_posts.json
 
           echo "Database preview:"
           jq '.[0:5]' data/mls_posts.json
@@ -75,6 +82,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No database changes."
           else
-            git commit -m "Update MLS post database"
+            git commit -m "Add share counts to MLS post database"
             git push
           fi
+          
