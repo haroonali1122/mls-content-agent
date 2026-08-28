@@ -35,23 +35,17 @@ jobs:
 
           jq -r '
             .[]
-            | {
-                title: (.title // ""),
-                shares: (.shares_count // 0)
-              }
-            | select(.shares > 0)
-            | "\(.shares) shares | \(.title)"
+            | "\(.shares_count // 0) shares | \(.title // "No title")"
           ' "$FILE" \
           | sort -nr \
-          | head -20
+          | sed -n '1,20p'
 
           echo ""
-          echo "===== NEXT TOPIC CANDIDATES ====="
+          echo "===== TOPIC CANDIDATES ====="
 
           cat > /tmp/candidates.json <<'EOF'
           [
             {
-              "rank": 1,
               "topic": "How to Read a CBC Report",
               "category": "CBC / Hematology",
               "angle": "How to Read / Interpretation",
@@ -62,7 +56,6 @@ jobs:
               "confidence": "HIGH"
             },
             {
-              "rank": 2,
               "topic": "How to Read an HbA1c Report",
               "category": "Diabetes / Glucose",
               "angle": "How to Read / Interpretation",
@@ -73,7 +66,6 @@ jobs:
               "confidence": "HIGH"
             },
             {
-              "rank": 3,
               "topic": "How to Read ALT, AST and ALP",
               "category": "Liver / Hepatitis",
               "angle": "How to Read / Interpretation",
@@ -84,7 +76,6 @@ jobs:
               "confidence": "HIGH"
             },
             {
-              "rank": 4,
               "topic": "Creatinine and eGFR Explained",
               "category": "Kidney / Renal",
               "angle": "Test / Diagnosis",
@@ -95,7 +86,6 @@ jobs:
               "confidence": "LOW"
             },
             {
-              "rank": 5,
               "topic": "Blood Glucose Results Explained",
               "category": "Diabetes / Glucose",
               "angle": "Test / Diagnosis",
@@ -106,7 +96,6 @@ jobs:
               "confidence": "MEDIUM"
             },
             {
-              "rank": 6,
               "topic": "Liver Function Test Interpretation",
               "category": "Liver / Hepatitis",
               "angle": "How to Read / Interpretation",
@@ -117,7 +106,6 @@ jobs:
               "confidence": "HIGH"
             },
             {
-              "rank": 7,
               "topic": "CBC Test and Diagnosis",
               "category": "CBC / Hematology",
               "angle": "Test / Diagnosis",
@@ -128,7 +116,6 @@ jobs:
               "confidence": "HIGH"
             },
             {
-              "rank": 8,
               "topic": "Blood Collection Guide",
               "category": "Specimen Collection",
               "angle": "Guide / Steps",
@@ -139,7 +126,6 @@ jobs:
               "confidence": "MEDIUM"
             },
             {
-              "rank": 9,
               "topic": "TSH, T3 and T4 Explained",
               "category": "Thyroid",
               "angle": "How to Read / Interpretation",
@@ -153,29 +139,34 @@ jobs:
           EOF
 
           echo ""
-          echo "===== FILTERING ALREADY PUBLISHED TOPICS ====="
+          echo "===== FILTERING PUBLISHED TOPICS ====="
 
-          jq -r '.[].title // empty' "$FILE" \
-            | tr '[:upper:]' '[:lower:]' \
-            > /tmp/published_titles.txt
-
-          jq -c '.[]' /tmp/candidates.json \
-          | while read -r candidate; do
-              TOPIC=$(echo "$candidate" | jq -r '.topic')
-
-              if grep -Fqi "$TOPIC" /tmp/published_titles.txt; then
-                echo "Already detected: $TOPIC"
-              else
-                echo "Available: $TOPIC"
-              fi
-            done
+          jq -r '
+            .[]
+            | (.title // "")
+            | ascii_downcase
+          ' "$FILE" > /tmp/published_titles.txt
 
           echo ""
-          echo "===== FINAL NEXT TOPIC ====="
+          echo "===== CANDIDATE STATUS ====="
 
-          NEXT=$(jq -c '
-            sort_by(
-              (
+          jq -c '.[]' /tmp/candidates.json |
+          while read -r candidate; do
+            TOPIC=$(echo "$candidate" | jq -r '.topic')
+
+            if grep -Fqi "$TOPIC" /tmp/published_titles.txt; then
+              echo "Already published: $TOPIC"
+            else
+              echo "Available: $TOPIC"
+            fi
+          done
+
+          echo ""
+          echo "===== FINAL TOPIC CALCULATION ====="
+
+          jq '
+            map(
+              .score = (
                 (.opportunity * 0.40)
                 + ((.historical_average / 5) * 0.30)
                 + (.search_intent * 3)
@@ -187,25 +178,47 @@ jobs:
                   )
               )
             )
+            | sort_by(.score)
             | reverse
-            | .[0]
-          ' /tmp/candidates.json)
+          ' /tmp/candidates.json > /tmp/ranked_candidates.json
 
-          echo "$NEXT" | jq .
+          echo ""
+          echo "===== FINAL RANKING ====="
+
+          jq '
+            map({
+              topic: .topic,
+              category: .category,
+              angle: .angle,
+              score: (.score | round),
+              historical_average: .historical_average,
+              historical_posts: .historical_posts,
+              opportunity: .opportunity,
+              confidence: .confidence
+            })
+          ' /tmp/ranked_candidates.json
+
+          NEXT=$(jq '.[0]' /tmp/ranked_candidates.json)
 
           TOPIC=$(echo "$NEXT" | jq -r '.topic')
           CATEGORY=$(echo "$NEXT" | jq -r '.category')
           ANGLE=$(echo "$NEXT" | jq -r '.angle')
+          SCORE=$(echo "$NEXT" | jq -r '.score')
           OPPORTUNITY=$(echo "$NEXT" | jq -r '.opportunity')
           HISTORICAL_AVG=$(echo "$NEXT" | jq -r '.historical_average')
+          HISTORICAL_POSTS=$(echo "$NEXT" | jq -r '.historical_posts')
           CONFIDENCE=$(echo "$NEXT" | jq -r '.confidence')
 
           echo ""
+          echo "===== SELECTED NEXT TOPIC ====="
+
           echo "Topic: $TOPIC"
           echo "Category: $CATEGORY"
           echo "Angle: $ANGLE"
-          echo "Opportunity: $OPPORTUNITY"
+          echo "Final score: $SCORE"
+          echo "Opportunity score: $OPPORTUNITY"
           echo "Historical average shares: $HISTORICAL_AVG"
+          echo "Historical posts: $HISTORICAL_POSTS"
           echo "Confidence: $CONFIDENCE"
 
           mkdir -p output
@@ -213,24 +226,41 @@ jobs:
           cat > output/mls_next_topic.txt <<EOF
           ===== MLS NEXT TOPIC =====
 
-          Topic: $TOPIC
-          Category: $CATEGORY
-          Recommended angle: $ANGLE
+          Topic:
+          $TOPIC
 
-          Opportunity score: $OPPORTUNITY
-          Historical average shares: $HISTORICAL_AVG
-          Evidence confidence: $CONFIDENCE
+          Category:
+          $CATEGORY
 
-          ===== NEXT ACTION =====
+          Recommended angle:
+          $ANGLE
 
-          Research USA search intent.
-          Validate medical evidence.
-          Build content angle.
-          Generate title.
-          Generate content.
-          Generate image prompt.
-          Generate image.
-          Publish to Facebook.
+          Final score:
+          $SCORE
+
+          Opportunity score:
+          $OPPORTUNITY
+
+          Historical average shares:
+          $HISTORICAL_AVG
+
+          Historical posts:
+          $HISTORICAL_POSTS
+
+          Evidence confidence:
+          $CONFIDENCE
+
+          ===== NEXT CONTENT PIPELINE =====
+
+          USA Search Research
+          Medical Evidence Validation
+          Content Angle
+          Content Blueprint
+          Title Engine
+          Content Writer
+          Image Prompt
+          Image Generation
+          Facebook Publishing
 
           ===== MLS NEXT TOPIC COMPLETE =====
           EOF
@@ -243,3 +273,19 @@ jobs:
         with:
           name: mls-next-topic
           path: output/mls_next_topic.txt
+
+      - name: Save next topic
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add output/mls_next_topic.txt
+
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Add next MLS topic"
+            git push
+          fi
+
+          echo "===== MLS NEXT TOPIC ENGINE COMPLETE ====="
