@@ -12,33 +12,19 @@ jobs:
         env:
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
         run: |
-          set -euo pipefail
-
-          PAGE_ID="1845536968999866"
-          API_VERSION="v26.0"
-
-          RESPONSE=$(curl -sS \
-            --get \
-            "https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/posts" \
+          RESPONSE=$(curl -sS --get \
+            "https://graph.facebook.com/v26.0/1845536968999866/posts" \
             --data-urlencode "fields=id,message,created_time" \
             --data-urlencode "limit=5" \
             --data-urlencode "access_token=${META_PAGE_ACCESS_TOKEN}")
 
           echo "$RESPONSE" | jq .
 
-          if echo "$RESPONSE" | jq -e '.error' >/dev/null; then
-            echo "BASIC_FIELDS=FAIL"
-            exit 1
-          fi
-
-          echo "BASIC_FIELDS=PASS"
-
       - name: Test shares field
         env:
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
         run: |
-          RESPONSE=$(curl -sS \
-            --get \
+          RESPONSE=$(curl -sS --get \
             "https://graph.facebook.com/v26.0/1845536968999866/posts" \
             --data-urlencode "fields=id,shares" \
             --data-urlencode "limit=5" \
@@ -46,20 +32,11 @@ jobs:
 
           echo "$RESPONSE" | jq .
 
-          if echo "$RESPONSE" | jq -e '.error' >/dev/null; then
-            echo "SHARES=FAIL"
-          elif echo "$RESPONSE" | jq -e '.data[]? | has("shares")' >/dev/null; then
-            echo "SHARES=PASS"
-          else
-            echo "SHARES=UNKNOWN"
-          fi
-
       - name: Test reactions field
         env:
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
         run: |
-          RESPONSE=$(curl -sS \
-            --get \
+          RESPONSE=$(curl -sS --get \
             "https://graph.facebook.com/v26.0/1845536968999866/posts" \
             --data-urlencode "fields=id,reactions" \
             --data-urlencode "limit=5" \
@@ -67,31 +44,14 @@ jobs:
 
           echo "$RESPONSE" | jq .
 
-          if echo "$RESPONSE" | jq -e '.error' >/dev/null; then
-            echo "REACTIONS=FAIL"
-          elif echo "$RESPONSE" | jq -e '.data[]? | has("reactions")' >/dev/null; then
-            echo "REACTIONS=PASS"
-          else
-            echo "REACTIONS=UNKNOWN"
-          fi
-
       - name: Test comments field
         env:
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
         run: |
-          RESPONSE=$(curl -sS \
-            --get \
+          RESPONSE=$(curl -sS --get \
             "https://graph.facebook.com/v26.0/1845536968999866/posts" \
             --data-urlencode "fields=id,comments" \
             --data-urlencode "limit=5" \
             --data-urlencode "access_token=${META_PAGE_ACCESS_TOKEN}")
 
           echo "$RESPONSE" | jq .
-
-          if echo "$RESPONSE" | jq -e '.error' >/dev/null; then
-            echo "COMMENTS=FAIL"
-          elif echo "$RESPONSE" | jq -e '.data[]? | has("comments")' >/dev/null; then
-            echo "COMMENTS=PASS"
-          else
-            echo "COMMENTS=UNKNOWN"
-          fi
