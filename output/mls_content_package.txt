@@ -1,0 +1,153 @@
+===== MLS FINAL CONTENT PACKAGE =====
+
+TOPIC:
+How to Read a Lipid Panel
+
+CATEGORY:
+Lipids
+
+PRIMARY ANGLE:
+How to Read / Interpretation
+
+TITLE:
+How to Read LDL, HDL and Triglycerides
+
+===== HOOK =====
+
+Your lipid panel has several numbers. Which ones actually matter?
+
+===== CORE PROBLEM =====
+
+People often see LDL, HDL, triglycerides and total cholesterol on one report but do not know how to interpret the complete pattern.
+
+===== CONTENT =====
+
+LDL CHOLESTEROL
+
+LDL is one of the main atherogenic cholesterol measures used in cardiovascular risk assessment.
+
+Its interpretation depends on overall cardiovascular risk and clinical context.
+
+
+HDL CHOLESTEROL
+
+HDL is one component of the lipid profile.
+
+HDL alone should not be used to determine overall cardiovascular risk.
+
+
+TRIGLYCERIDES
+
+Triglycerides measure a type of fat in the blood.
+
+Very high triglyceride levels have clinical significance and are associated with pancreatitis risk.
+
+
+TOTAL CHOLESTEROL
+
+Total cholesterol represents cholesterol carried in several lipoprotein particles.
+
+It should be interpreted together with the other lipid measurements.
+
+
+THE COMPLETE PATTERN
+
+Do not judge cardiovascular risk from one lipid value alone.
+
+Interpret the complete lipid profile together with the person's overall cardiovascular risk and clinical context.
+
+===== ACCURACY RULES =====
+
+Do not use one universal lipid target for every person.
+
+Separate laboratory reference ranges from treatment targets.
+
+Do not diagnose cardiovascular disease from a lipid panel alone.
+
+Do not describe HDL alone as complete cardiovascular protection.
+
+===== SEO SEARCH TERMS =====
+
+how to read lipid panel
+
+lipid panel results explained
+
+LDL HDL triglycerides explained
+
+cholesterol numbers meaning
+
+cholesterol test results explained
+
+===== IMAGE FORMAT =====
+
+Aspect ratio: 4:5
+
+Format: Vertical educational infographic
+
+Resolution: High resolution
+
+Audience: U.S. medical laboratory and health education audience
+
+===== IMAGE PROMPT =====
+
+Create a professional 4:5 vertical medical educational infographic titled "How to Read LDL, HDL and Triglycerides".
+
+Use a clean clinical medical design with a light medical background, dark top banner and dark section banners.
+
+Use large bold highly readable typography.
+
+Make the infographic text-dominant.
+
+Use minimal realistic laboratory or lipid-panel supporting visuals.
+
+Do not use cartoon graphics, stickers or unnecessary decorative elements.
+
+Top hook:
+"Your lipid panel has several numbers. Which ones actually matter?"
+
+Section 1:
+LDL CHOLESTEROL.
+Explain what LDL represents and why it matters in cardiovascular risk assessment.
+State that interpretation depends on overall cardiovascular risk and clinical context.
+
+Section 2:
+HDL CHOLESTEROL.
+Explain HDL as one component of the lipid profile.
+Do not describe HDL alone as complete cardiovascular protection.
+
+Section 3:
+TRIGLYCERIDES.
+Explain what triglycerides measure.
+Explain why very high levels have clinical significance and mention pancreatitis risk.
+
+Section 4:
+TOTAL CHOLESTEROL.
+Explain what total cholesterol represents.
+Explain why it should be interpreted with the rest of the lipid profile.
+
+Section 5:
+THE COMPLETE PATTERN.
+Explain why one lipid number should not be used alone to determine overall cardiovascular risk.
+Explain that interpretation depends on overall cardiovascular risk and clinical context.
+
+Accuracy requirements:
+Do not provide one universal treatment target.
+Separate laboratory reference ranges from treatment targets.
+Do not diagnose cardiovascular disease from a lipid panel alone.
+Do not claim HDL alone determines cardiovascular protection.
+
+Bottom takeaway:
+"READ THE COMPLETE LIPID PATTERN, NOT ONE NUMBER ALONE"
+
+Keep all text inside safe margins.
+Prioritize accurate readable text over decorative visuals.
+
+===== HISTORICAL SIGNAL =====
+
+Historical average shares: 450.25
+
+Historical posts: 4
+
+Confidence: LOW
+
+===== PACKAGE COMPLETE =====
