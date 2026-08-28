@@ -87,3 +87,120 @@ jobs:
               over_twenty_five: ([.[] | select(.shares_count > 25)] | length)
             }
           ' "$FILE"
+
+          echo ""
+          echo "===== TOPIC CLASSIFICATION ====="
+
+          jq -r '
+            .[]
+            | .text = ((.title // "") + " " + (.message // "") | ascii_downcase)
+            | if (.text | test("hba1c|hemoglobin a1c|cbc|hematocrit|hemoglobin|platelet|wbc|rbc|blood count|hematology|anemia"))
+              then "CBC / Hematology"
+              elif (.text | test("glucose|blood sugar|diabetes|prediabetes|insulin"))
+              then "Diabetes / Glucose"
+              elif (.text | test("cholesterol|triglyceride|lipid|ldl|hdl"))
+              then "Lipids"
+              elif (.text | test("hepatitis|liver|alt|ast|bilirubin"))
+              then "Liver / Hepatitis"
+              elif (.text | test("creatinine|kidney|renal|bun|egfr"))
+              then "Kidney / Renal"
+              elif (.text | test("thyroid|tsh|t3|t4"))
+              then "Thyroid"
+              elif (.text | test("culture|bacteria|microbiology|gram stain|microbial"))
+              then "Microbiology"
+              elif (.text | test("urine|urinalysis|urinary|stool|fecal"))
+              then "Urinalysis / Stool"
+              elif (.text | test("rf factor|anti-ccp|antibody|antigen|immunology|serology|sti|hiv|syphilis"))
+              then "Immunology / Serology"
+              elif (.text | test("pt|inr|aptt|coagulation|clotting factor|bleeding"))
+              then "Coagulation"
+              elif (.text | test("blood bank|blood group|abo|rh factor|crossmatch|transfusion"))
+              then "Blood Bank"
+              elif (.text | test("pcr|molecular|dna|rna|genetic"))
+              then "Molecular Biology"
+              elif (.text | test("histopathology|histology|biopsy|tissue|pathology"))
+              then "Histopathology"
+              elif (.text | test("specimen|blood collection|phlebotomy|sample collection"))
+              then "Specimen Collection"
+              elif (.text | test("safety|ppe|sterilization|disinfection|biohazard|waste disposal"))
+              then "Laboratory Safety"
+              else "General Lab / Other"
+              end
+          ' "$FILE" \
+          | sort \
+          | uniq -c \
+          | sort -nr
+
+          echo ""
+          echo "===== TOPIC SHARE PERFORMANCE ====="
+
+          for TOPIC in \
+            "CBC / Hematology" \
+            "Diabetes / Glucose" \
+            "Lipids" \
+            "Liver / Hepatitis" \
+            "Kidney / Renal" \
+            "Thyroid" \
+            "Microbiology" \
+            "Urinalysis / Stool" \
+            "Immunology / Serology" \
+            "Coagulation" \
+            "Blood Bank" \
+            "Molecular Biology" \
+            "Histopathology" \
+            "Specimen Collection" \
+            "Laboratory Safety" \
+            "General Lab / Other"
+          do
+            RESULT=$(jq --arg topic "$TOPIC" '
+              [
+                .[]
+                | .text = ((.title // "") + " " + (.message // "") | ascii_downcase)
+                | .topic =
+                  (if (.text | test("hba1c|hemoglobin a1c|cbc|hematocrit|hemoglobin|platelet|wbc|rbc|blood count|hematology|anemia"))
+                   then "CBC / Hematology"
+                   elif (.text | test("glucose|blood sugar|diabetes|prediabetes|insulin"))
+                   then "Diabetes / Glucose"
+                   elif (.text | test("cholesterol|triglyceride|lipid|ldl|hdl"))
+                   then "Lipids"
+                   elif (.text | test("hepatitis|liver|alt|ast|bilirubin"))
+                   then "Liver / Hepatitis"
+                   elif (.text | test("creatinine|kidney|renal|bun|egfr"))
+                   then "Kidney / Renal"
+                   elif (.text | test("thyroid|tsh|t3|t4"))
+                   then "Thyroid"
+                   elif (.text | test("culture|bacteria|microbiology|gram stain|microbial"))
+                   then "Microbiology"
+                   elif (.text | test("urine|urinalysis|urinary|stool|fecal"))
+                   then "Urinalysis / Stool"
+                   elif (.text | test("rf factor|anti-ccp|antibody|antigen|immunology|serology|sti|hiv|syphilis"))
+                   then "Immunology / Serology"
+                   elif (.text | test("pt|inr|aptt|coagulation|clotting factor|bleeding"))
+                   then "Coagulation"
+                   elif (.text | test("blood bank|blood group|abo|rh factor|crossmatch|transfusion"))
+                   then "Blood Bank"
+                   elif (.text | test("pcr|molecular|dna|rna|genetic"))
+                   then "Molecular Biology"
+                   elif (.text | test("histopathology|histology|biopsy|tissue|pathology"))
+                   then "Histopathology"
+                   elif (.text | test("specimen|blood collection|phlebotomy|sample collection"))
+                   then "Specimen Collection"
+                   elif (.text | test("safety|ppe|sterilization|disinfection|biohazard|waste disposal"))
+                   then "Laboratory Safety"
+                   else "General Lab / Other"
+                   end)
+                | select(.topic == $topic)
+                | .shares_count
+              ]
+              | if length == 0
+                then "NO_POSTS"
+                else {
+                  posts: length,
+                  total_shares: add,
+                  average_shares: (add / length)
+                }
+                end
+            ' "$FILE")
+
+            echo "$TOPIC: $RESULT"
+          done
