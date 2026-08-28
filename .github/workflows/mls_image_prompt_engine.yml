@@ -1,0 +1,126 @@
+name: MLS Image Prompt Engine
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-image-prompt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate MLS infographic prompt
+        run: |
+          set -euo pipefail
+
+          TOPIC="How to Read a Lipid Panel"
+          CATEGORY="Lipids"
+          ANGLE="How to Read / Interpretation"
+          TITLE="How to Read LDL, HDL and Triglycerides"
+
+          echo "===== MLS IMAGE PROMPT ENGINE ====="
+
+          echo ""
+          echo "===== SELECTED INPUT ====="
+          echo "Topic: $TOPIC"
+          echo "Category: $CATEGORY"
+          echo "Angle: $ANGLE"
+          echo "Title: $TITLE"
+
+          echo ""
+          echo "===== IMAGE FORMAT ====="
+          echo "Aspect ratio: 4:5"
+          echo "Format: Vertical educational infographic"
+          echo "Resolution: High resolution"
+          echo "Audience: U.S. medical laboratory and health education audience"
+
+          echo ""
+          echo "===== DESIGN STYLE ====="
+          echo "Professional medical infographic."
+          echo "Text-dominant layout."
+          echo "Clean clinical appearance."
+          echo "Light medical background."
+          echo "Dark top banner."
+          echo "Dark section banners."
+          echo "Large bold readable typography."
+          echo "High contrast text."
+          echo "Minimal supporting medical visuals."
+          echo "No cartoon elements."
+          echo "No stickers."
+          echo "No unnecessary icons."
+          echo "No excessive empty space."
+
+          echo ""
+          echo "===== TOP BANNER ====="
+          echo "$TITLE"
+
+          echo ""
+          echo "===== HOOK ====="
+          echo "Your lipid panel has several numbers. Which ones actually matter?"
+
+          echo ""
+          echo "===== SECTION 1 ====="
+          echo "LDL CHOLESTEROL"
+          echo "Explain what LDL represents."
+          echo "Explain why LDL matters in cardiovascular risk assessment."
+          echo "State that interpretation depends on overall cardiovascular risk and clinical context."
+
+          echo ""
+          echo "===== SECTION 2 ====="
+          echo "HDL CHOLESTEROL"
+          echo "Explain HDL as one component of the lipid profile."
+          echo "Do not describe HDL alone as complete cardiovascular protection."
+
+          echo ""
+          echo "===== SECTION 3 ====="
+          echo "TRIGLYCERIDES"
+          echo "Explain what triglycerides measure."
+          echo "Explain why very high levels have clinical significance."
+          echo "Mention pancreatitis risk."
+
+          echo ""
+          echo "===== SECTION 4 ====="
+          echo "TOTAL CHOLESTEROL"
+          echo "Explain what total cholesterol represents."
+          echo "Explain why it should be interpreted with the rest of the lipid profile."
+
+          echo ""
+          echo "===== SECTION 5 ====="
+          echo "THE COMPLETE PATTERN"
+          echo "Do not judge cardiovascular risk from one lipid value alone."
+          echo "Interpret the complete lipid profile together with overall cardiovascular risk and clinical context."
+
+          echo ""
+          echo "===== ACCURACY REQUIREMENTS ====="
+          echo "Do not provide one universal treatment target."
+          echo "Separate laboratory reference ranges from treatment targets."
+          echo "Do not diagnose cardiovascular disease from a lipid panel alone."
+          echo "Do not claim HDL alone determines cardiovascular protection."
+
+          echo ""
+          echo "===== BOTTOM TAKEAWAY ====="
+          echo "READ THE COMPLETE LIPID PATTERN, NOT ONE NUMBER ALONE"
+
+          echo ""
+          echo "===== SUPPORTING VISUALS ====="
+          echo "Use small realistic laboratory or lipid-panel visuals."
+          echo "Use simple visual separation between LDL, HDL, triglycerides and total cholesterol."
+          echo "Keep visuals secondary to the written information."
+
+          echo ""
+          echo "===== FINAL IMAGE PROMPT ====="
+          echo "Create a professional 4:5 vertical medical educational infographic titled '$TITLE'."
+          echo "Use a clean clinical design with a light medical background, dark top banner and dark section banners."
+          echo "Make the typography large, bold and highly readable."
+          echo "The infographic must clearly explain LDL cholesterol, HDL cholesterol, triglycerides, total cholesterol and why the complete lipid pattern matters."
+          echo "Use concise educational text and small realistic supporting medical visuals."
+          echo "Keep the design text-dominant and suitable for a U.S. medical laboratory and health education audience."
+          echo "Do not use cartoon graphics, stickers or unnecessary decorative elements."
+          echo "Do not imply that one lipid value alone determines cardiovascular risk."
+          echo "Do not use a universal treatment target."
+          echo "End with the takeaway: READ THE COMPLETE LIPID PATTERN, NOT ONE NUMBER ALONE."
+
+          echo ""
+          echo "===== MLS IMAGE PROMPT ENGINE COMPLETE ====="
