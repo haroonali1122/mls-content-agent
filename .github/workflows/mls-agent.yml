@@ -57,10 +57,16 @@ jobs:
             unique_by(.id)
             | map(
                 .title = (
-                  .message
-                  | split("\n")
-                  | map(select(length > 0))
-                  | .[0]
+                  if (.message | type) == "string" then
+                    (
+                      .message
+                      | split("\n")
+                      | map(select(length > 0))
+                      | .[0] // ""
+                    )
+                  else
+                    ""
+                  end
                 )
                 | .shares_count = (.shares.count // 0)
                 | del(.shares)
