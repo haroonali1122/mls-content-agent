@@ -1,0 +1,97 @@
+name: MLS Content Angle Engine
+
+on:
+  workflow_dispatch:
+
+jobs:
+  content-angle:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate content angle
+        run: |
+          set -euo pipefail
+
+          TOPIC="How to Read a Lipid Panel"
+          CATEGORY="Lipids"
+          ANGLE="How to Read / Interpretation"
+
+          echo "===== MLS CONTENT ANGLE ENGINE ====="
+
+          echo ""
+          echo "===== SELECTED TOPIC ====="
+          echo "Topic: $TOPIC"
+          echo "Category: $CATEGORY"
+          echo "Historical winning angle: $ANGLE"
+
+          echo ""
+          echo "===== PROBLEM ANGLES ====="
+
+          echo "1. People see several lipid numbers but do not know which ones matter."
+          echo "2. LDL, HDL and triglycerides are often confused."
+          echo "3. A lipid panel has multiple values with different clinical meanings."
+          echo "4. A result outside the reference range does not automatically explain cardiovascular risk."
+          echo "5. Reading the numbers individually can miss the overall pattern."
+
+          echo ""
+          echo "===== PRIMARY CONTENT ANGLE ====="
+
+          echo "How to Read a Lipid Panel: Understand LDL, HDL, Triglycerides and Total Cholesterol"
+
+          echo ""
+          echo "===== CURIOSITY ANGLES ====="
+
+          echo "1. Which number on a lipid panel matters most?"
+          echo "2. High cholesterol does not tell the whole story. What should you check next?"
+          echo "3. LDL, HDL and triglycerides look similar on a report. Their meanings are different."
+          echo "4. How do you read a lipid panel without memorizing every number?"
+
+          echo ""
+          echo "===== HOOK OPTIONS ====="
+
+          echo "1. Your lipid panel has several numbers. Which ones actually matter?"
+          echo "2. LDL, HDL and triglycerides are not interchangeable."
+          echo "3. Looking at total cholesterol alone can miss important information."
+          echo "4. Got a lipid panel? Start with these four numbers."
+
+          echo ""
+          echo "===== CONTENT STRUCTURE ====="
+
+          echo "1. Hook: Create a specific problem around confusing lipid results."
+          echo "2. Explain: Introduce the main lipid-panel measurements."
+          echo "3. LDL: Explain what it represents and why it matters."
+          echo "4. HDL: Explain its role in the lipid profile."
+          echo "5. Triglycerides: Explain what the measurement represents."
+          echo "6. Total cholesterol: Explain why it should be viewed with the rest of the panel."
+          echo "7. Takeaway: Read the complete lipid pattern, not one number alone."
+
+          echo ""
+          echo "===== SEARCH INTENT MATCH ====="
+
+          echo "how to read lipid panel"
+          echo "lipid panel results explained"
+          echo "LDL HDL triglycerides explained"
+          echo "cholesterol numbers meaning"
+          echo "cholesterol test results explained"
+
+          echo ""
+          echo "===== HISTORICAL SIGNAL ====="
+
+          echo "Winning category: Lipids"
+          echo "Winning angle: How to Read / Interpretation"
+          echo "Historical average shares: 450.25"
+          echo "Historical posts: 4"
+          echo "Confidence: LOW"
+
+          echo ""
+          echo "===== FINAL RECOMMENDATION ====="
+
+          echo "Topic: How to Read a Lipid Panel"
+          echo "Angle: How to Read / Interpretation"
+          echo "Primary hook: Your lipid panel has several numbers. Which ones actually matter?"
+
+          echo ""
+          echo "===== CONTENT ANGLE ENGINE COMPLETE ====="
