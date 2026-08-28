@@ -1,0 +1,171 @@
+name: MLS Final Topic Selector
+
+on:
+  workflow_dispatch:
+
+jobs:
+  select-topic:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run final topic selector
+        run: |
+          set -euo pipefail
+
+          echo "===== MLS FINAL TOPIC SELECTOR ====="
+
+          python3 <<'PY'
+          import json
+
+          candidates = [
+              {
+                  "topic": "How to Read a CBC Report",
+                  "category": "CBC / Hematology",
+                  "angle": "How to Read / Interpretation",
+                  "opportunity_score": 92,
+                  "historical_average_shares": 229.7,
+                  "historical_posts": 27
+              },
+              {
+                  "topic": "How to Read a Lipid Panel",
+                  "category": "Lipids",
+                  "angle": "How to Read / Interpretation",
+                  "opportunity_score": 92,
+                  "historical_average_shares": 450.25,
+                  "historical_posts": 4
+              },
+              {
+                  "topic": "How to Read ALT, AST and ALP",
+                  "category": "Liver / Hepatitis",
+                  "angle": "How to Read / Interpretation",
+                  "opportunity_score": 90,
+                  "historical_average_shares": 145.9,
+                  "historical_posts": 31
+              },
+              {
+                  "topic": "How to Read an HbA1c Report",
+                  "category": "Diabetes / Glucose",
+                  "angle": "How to Read / Interpretation",
+                  "opportunity_score": 97,
+                  "historical_average_shares": 170.9,
+                  "historical_posts": 82
+              },
+              {
+                  "topic": "Creatinine and eGFR Explained",
+                  "category": "Kidney / Renal",
+                  "angle": "Test / Diagnosis",
+                  "opportunity_score": 90,
+                  "historical_average_shares": 196,
+                  "historical_posts": 1
+              },
+              {
+                  "topic": "Blood Glucose Results Explained",
+                  "category": "Diabetes / Glucose",
+                  "angle": "Test / Diagnosis",
+                  "opportunity_score": 93,
+                  "historical_average_shares": 134.75,
+                  "historical_posts": 16
+              },
+              {
+                  "topic": "TSH, T3 and T4 Explained",
+                  "category": "Thyroid",
+                  "angle": "How to Read / Interpretation",
+                  "opportunity_score": 87,
+                  "historical_average_shares": 81,
+                  "historical_posts": 5
+              },
+              {
+                  "topic": "CBC Test and Diagnosis",
+                  "category": "CBC / Hematology",
+                  "angle": "Test / Diagnosis",
+                  "opportunity_score": 90,
+                  "historical_average_shares": 127.3,
+                  "historical_posts": 34
+              },
+              {
+                  "topic": "Liver Function Test Interpretation",
+                  "category": "Liver / Hepatitis",
+                  "angle": "How to Read / Interpretation",
+                  "opportunity_score": 89,
+                  "historical_average_shares": 145.9,
+                  "historical_posts": 31
+              },
+              {
+                  "topic": "Blood Collection Guide",
+                  "category": "Specimen Collection",
+                  "angle": "Guide / Steps",
+                  "opportunity_score": 82,
+                  "historical_average_shares": 130.3,
+                  "historical_posts": 18
+              }
+          ]
+
+          def confidence(posts):
+              if posts >= 25:
+                  return "HIGH"
+              elif posts >= 10:
+                  return "MEDIUM"
+              else:
+                  return "LOW"
+
+          for item in candidates:
+              item["confidence"] = confidence(item["historical_posts"])
+
+              historical = min(item["historical_average_shares"] / 5, 100)
+
+              item["final_score"] = round(
+                  (item["opportunity_score"] * 0.60) +
+                  (historical * 0.40),
+                  2
+              )
+
+          candidates.sort(
+              key=lambda x: x["final_score"],
+              reverse=True
+          )
+
+          print()
+          print("===== FINAL RANKING =====")
+
+          for i, item in enumerate(candidates, 1):
+              print(
+                  f"{i}. {item['topic']} | "
+                  f"Final Score: {item['final_score']} | "
+                  f"Opportunity: {item['opportunity_score']} | "
+                  f"Historical Avg: {item['historical_average_shares']} | "
+                  f"Posts: {item['historical_posts']} | "
+                  f"Confidence: {item['confidence']}"
+              )
+
+          print()
+          print("===== TOP 5 FINAL RECOMMENDATIONS =====")
+
+          for i, item in enumerate(candidates[:5], 1):
+              print()
+              print(f"{i}. {item['topic']}")
+              print(f"Category: {item['category']}")
+              print(f"Recommended angle: {item['angle']}")
+              print(f"Final score: {item['final_score']}")
+              print(f"Historical average shares: {item['historical_average_shares']}")
+              print(f"Historical posts: {item['historical_posts']}")
+              print(f"Evidence confidence: {item['confidence']}")
+
+          print()
+          print("===== BEST NEXT TOPIC =====")
+
+          best = candidates[0]
+
+          print(f"Topic: {best['topic']}")
+          print(f"Category: {best['category']}")
+          print(f"Angle: {best['angle']}")
+          print(f"Final score: {best['final_score']}")
+          print(f"Historical average shares: {best['historical_average_shares']}")
+          print(f"Historical posts: {best['historical_posts']}")
+          print(f"Confidence: {best['confidence']}")
+
+          print()
+          print("===== FINAL TOPIC SELECTION COMPLETE =====")
+          PY
