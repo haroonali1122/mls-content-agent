@@ -1,0 +1,108 @@
+name: MLS Publish Post
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish-post:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify image
+        run: |
+          set -euo pipefail
+
+          IMAGE="output/lipid_panel.png"
+
+          if [ ! -f "$IMAGE" ]; then
+            echo "Image not found: $IMAGE"
+            exit 1
+          fi
+
+          echo "Image found: $IMAGE"
+          file "$IMAGE"
+
+      - name: Publish image to Facebook Page
+        env:
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          PAGE_ID="1845536968999866"
+          API_VERSION="v26.0"
+          IMAGE="output/lipid_panel.png"
+
+          CAPTION=$(cat <<'EOF'
+          A lipid panel includes several measurements, and each one provides different information.
+
+          1. LDL CHOLESTEROL
+          LDL is one of the main atherogenic cholesterol measures used in cardiovascular risk assessment. Its interpretation depends on overall cardiovascular risk and clinical context.
+
+          2. HDL CHOLESTEROL
+          HDL is one component of the lipid profile. HDL alone should not be used to determine overall cardiovascular risk.
+
+          3. TRIGLYCERIDES
+          Triglycerides measure a type of fat in the blood. Very high levels have clinical significance and are associated with pancreatitis risk.
+
+          4. TOTAL CHOLESTEROL
+          Total cholesterol represents cholesterol carried in several lipoprotein particles. It should be interpreted together with the other lipid measurements.
+
+          5. THE COMPLETE PATTERN
+          One lipid value alone does not determine overall cardiovascular risk. The complete lipid profile should be interpreted together with overall cardiovascular risk and clinical context.
+
+          Read the complete lipid pattern, not one number alone.
+
+          #LipidPanel
+          #Cholesterol
+          #LDL
+          #HDL
+          #Triglycerides
+          EOF
+          )
+
+          echo "===== MLS FACEBOOK PUBLISHER ====="
+          echo "Image: $IMAGE"
+          echo "Page ID: $PAGE_ID"
+
+          echo ""
+          echo "===== UPLOADING IMAGE TO FACEBOOK ====="
+
+          RESPONSE=$(curl -sS --fail-with-body \
+            -X POST \
+            "https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/photos" \
+            -F "source=@${IMAGE}" \
+            -F "caption=${CAPTION}" \
+            -F "published=true" \
+            -F "access_token=${META_PAGE_ACCESS_TOKEN}")
+
+          echo ""
+          echo "===== FACEBOOK RESPONSE ====="
+          echo "$RESPONSE" | jq .
+
+          if echo "$RESPONSE" | jq -e '.error' >/dev/null; then
+            echo ""
+            echo "Facebook API returned an error."
+            exit 1
+          fi
+
+          POST_ID=$(echo "$RESPONSE" | jq -r '.post_id // .id // empty')
+
+          if [ -z "$POST_ID" ]; then
+            echo ""
+            echo "Image request completed, but no post ID was returned."
+            exit 1
+          fi
+
+          echo ""
+          echo "===== PUBLISH SUCCESS ====="
+          echo "Facebook Post ID: $POST_ID"
+          echo "Image published successfully."
+
+          echo ""
+          echo "===== MLS FACEBOOK PUBLISHER COMPLETE ====="
