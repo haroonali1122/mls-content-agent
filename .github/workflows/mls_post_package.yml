@@ -1,0 +1,135 @@
+name: MLS Post Package
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  create-post-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create final Facebook post package
+        run: |
+          set -euo pipefail
+
+          mkdir -p output
+
+          cat > output/mls_post_package.txt <<'EOF'
+          ===== MLS FINAL FACEBOOK POST PACKAGE =====
+
+          TOPIC:
+          How to Read a Lipid Panel
+
+          CATEGORY:
+          Lipids
+
+          CONTENT ANGLE:
+          How to Read / Interpretation
+
+          ===== TITLE =====
+
+          How to Read LDL, HDL and Triglycerides
+
+          ===== HOOK =====
+
+          Your lipid panel has several numbers. Which ones actually matter?
+
+          ===== DESCRIPTION =====
+
+          A lipid panel includes several measurements, and each one provides different information.
+
+          1. LDL CHOLESTEROL
+          LDL is one of the main atherogenic cholesterol measures used in cardiovascular risk assessment. Its interpretation depends on overall cardiovascular risk and clinical context.
+
+          2. HDL CHOLESTEROL
+          HDL is one component of the lipid profile. HDL alone should not be used to determine overall cardiovascular risk.
+
+          3. TRIGLYCERIDES
+          Triglycerides measure a type of fat in the blood. Very high levels have clinical significance and are associated with pancreatitis risk.
+
+          4. TOTAL CHOLESTEROL
+          Total cholesterol represents cholesterol carried in several lipoprotein particles. It should be interpreted together with the other lipid measurements.
+
+          5. THE COMPLETE PATTERN
+          One lipid value alone does not determine overall cardiovascular risk. The complete lipid profile should be interpreted together with overall cardiovascular risk and clinical context.
+
+          ===== TAKEAWAY =====
+
+          Read the complete lipid pattern, not one number alone.
+
+          ===== HASHTAGS =====
+
+          #LipidPanel
+          #Cholesterol
+          #LDL
+          #HDL
+          #Triglycerides
+
+          ===== SEO TERMS =====
+
+          how to read lipid panel
+          lipid panel results explained
+          LDL HDL triglycerides explained
+          cholesterol numbers meaning
+          cholesterol test results explained
+
+          ===== IMAGE =====
+
+          Existing generated infographic:
+          How to Read LDL, HDL and Triglycerides
+
+          Aspect ratio:
+          4:5
+
+          ===== HISTORICAL SIGNAL =====
+
+          Historical average shares:
+          450.25
+
+          Historical posts:
+          4
+
+          Evidence confidence:
+          LOW
+
+          ===== PUBLISHING CHECK =====
+
+          Title: READY
+          Description: READY
+          Hashtags: READY
+          Image: READY
+          SEO terms: READY
+
+          ===== MLS FINAL POST PACKAGE COMPLETE =====
+          EOF
+
+          echo "===== MLS FINAL FACEBOOK POST PACKAGE ====="
+          cat output/mls_post_package.txt
+
+      - name: Upload final post package
+        uses: actions/upload-artifact@v4
+        with:
+          name: mls-post-package
+          path: output/mls_post_package.txt
+
+      - name: Save final package to repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add output/mls_post_package.txt
+
+          if git diff --cached --quiet; then
+            echo "No package changes."
+          else
+            git commit -m "Add MLS final post package"
+            git push
+          fi
+
+          echo "===== MLS POST PACKAGE COMPLETE ====="
