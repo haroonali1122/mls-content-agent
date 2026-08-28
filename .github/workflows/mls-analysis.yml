@@ -1,0 +1,88 @@
+name: MLS Post Analysis
+
+on:
+  workflow_dispatch:
+
+jobs:
+  analyze-posts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Analyze MLS post database
+        run: |
+          set -euo pipefail
+
+          FILE="data/mls_posts.json"
+
+          if [ ! -f "$FILE" ]; then
+            echo "Database file not found: $FILE"
+            exit 1
+          fi
+
+          echo "===== MLS POST DATABASE ANALYSIS ====="
+
+          TOTAL=$(jq 'length' "$FILE")
+
+          TITLES=$(jq '
+            [.[] | select(.title != null and .title != "")]
+            | length
+          ' "$FILE")
+
+          TOTAL_SHARES=$(jq '
+            [.[].shares_count]
+            | add
+          ' "$FILE")
+
+          AVERAGE_SHARES=$(jq '
+            [.[].shares_count]
+            | add / length
+          ' "$FILE")
+
+          MEDIAN_SHARES=$(jq '
+            [.[].shares_count]
+            | sort
+            | .[length / 2 | floor]
+          ' "$FILE")
+
+          echo "Total posts: $TOTAL"
+          echo "Posts with titles: $TITLES"
+          echo "Total shares: $TOTAL_SHARES"
+          echo "Average shares: $AVERAGE_SHARES"
+          echo "Median shares: $MEDIAN_SHARES"
+
+          echo ""
+          echo "===== TOP 10 POSTS BY SHARES ====="
+
+          jq -r '
+            sort_by(.shares_count)
+            | reverse
+            | .[0:10]
+            | .[]
+            | "\(.shares_count) shares | \(.title // "No title") | \(.created_time)"
+          ' "$FILE"
+
+          echo ""
+          echo "===== TITLE COVERAGE ====="
+
+          jq -r '
+            if (.title != null and .title != "")
+            then "HAS_TITLE"
+            else "NO_TITLE"
+            end
+          ' "$FILE" | sort | uniq -c
+
+          echo ""
+          echo "===== SHARE COUNT DISTRIBUTION ====="
+
+          jq '
+            {
+              zero_shares: ([.[] | select(.shares_count == 0)] | length),
+              one_to_five: ([.[] | select(.shares_count >= 1 and .shares_count <= 5)] | length),
+              six_to_ten: ([.[] | select(.shares_count >= 6 and .shares_count <= 10)] | length),
+              eleven_to_twenty_five: ([.[] | select(.shares_count >= 11 and .shares_count <= 25)] | length),
+              over_twenty_five: ([.[] | select(.shares_count > 25)] | length)
+            }
+          ' "$FILE"
