@@ -3,6 +3,9 @@ name: MLS Image Generator
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   generate-image:
     runs-on: ubuntu-latest
@@ -11,61 +14,117 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Generate MLS infographic prompt
+      - name: Generate lipid panel infographic
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           set -euo pipefail
 
-          TOPIC="How to Read a Lipid Panel"
-          CATEGORY="Lipids"
-          ANGLE="How to Read / Interpretation"
-          TITLE="How to Read LDL, HDL and Triglycerides"
+          mkdir -p generated
 
-          echo "===== MLS IMAGE GENERATOR ====="
-          echo "Topic: $TOPIC"
-          echo "Category: $CATEGORY"
-          echo "Angle: $ANGLE"
-          echo "Title: $TITLE"
+          PROMPT='Create a professional 4:5 vertical medical educational infographic titled "How to Read LDL, HDL and Triglycerides".
 
-          echo ""
-          echo "===== IMAGE FORMAT ====="
-          echo "Aspect Ratio: 4:5"
-          echo "Format: Vertical educational infographic"
-          echo "Resolution: High resolution"
+          Use a clean clinical medical design.
+          Use a light medical background.
+          Use dark top and section banners.
+          Use large bold readable typography.
+          Make the infographic text-dominant.
+          Use minimal realistic medical laboratory visuals.
+          Do not use cartoons, stickers, or unnecessary decorative elements.
 
-          echo ""
-          echo "===== DESIGN STYLE ====="
-          echo "Professional medical infographic"
-          echo "Text-dominant layout"
-          echo "Clean clinical appearance"
-          echo "Light medical background"
-          echo "Dark top banner"
-          echo "Dark section banners"
-          echo "Large bold readable typography"
-          echo "High contrast text"
-          echo "Minimal realistic medical visuals"
-          echo "No cartoon elements"
-          echo "No stickers"
-          echo "No unnecessary decorative elements"
+          Top hook:
+          "Your lipid panel has several numbers. Which ones actually matter?"
 
-          echo ""
-          echo "===== CONTENT ====="
-          echo "HOOK: Your lipid panel has several numbers. Which ones actually matter?"
-          echo "LDL: One of the main atherogenic cholesterol measures used in cardiovascular risk assessment."
-          echo "HDL: One component of the lipid profile. HDL alone does not determine overall cardiovascular risk."
-          echo "TRIGLYCERIDES: A type of fat in the blood. Very high levels have clinical significance and are associated with pancreatitis risk."
-          echo "TOTAL CHOLESTEROL: Represents cholesterol carried in several lipoprotein particles and should be interpreted with the rest of the lipid profile."
-          echo "COMPLETE PATTERN: Interpret the complete lipid profile with overall cardiovascular risk and clinical context."
+          Section 1:
+          LDL CHOLESTEROL
+          Explain that LDL is one of the main atherogenic cholesterol measures used in cardiovascular risk assessment.
+          Explain that interpretation depends on overall cardiovascular risk and clinical context.
 
-          echo ""
-          echo "===== ACCURACY ====="
-          echo "No universal treatment target"
-          echo "Separate reference ranges from treatment targets"
-          echo "Do not diagnose cardiovascular disease from a lipid panel alone"
-          echo "Do not describe HDL alone as complete cardiovascular protection"
+          Section 2:
+          HDL CHOLESTEROL
+          Explain HDL as one component of the lipid profile.
+          Do not describe HDL alone as complete cardiovascular protection.
 
-          echo ""
-          echo "===== BOTTOM TAKEAWAY ====="
-          echo "READ THE COMPLETE LIPID PATTERN, NOT ONE NUMBER ALONE"
+          Section 3:
+          TRIGLYCERIDES
+          Explain what triglycerides measure.
+          Explain that very high levels have clinical significance and are associated with pancreatitis risk.
 
-          echo ""
+          Section 4:
+          TOTAL CHOLESTEROL
+          Explain what total cholesterol represents.
+          Explain why it should be interpreted with the rest of the lipid profile.
+
+          Section 5:
+          THE COMPLETE PATTERN
+          Explain that one lipid value alone should not determine overall cardiovascular risk.
+          Explain that interpretation depends on overall cardiovascular risk and clinical context.
+
+          Accuracy requirements:
+          Do not provide one universal treatment target.
+          Separate laboratory reference ranges from treatment targets.
+          Do not diagnose cardiovascular disease from a lipid panel alone.
+          Do not claim HDL alone determines cardiovascular protection.
+
+          Bottom takeaway:
+          "READ THE COMPLETE LIPID PATTERN, NOT ONE NUMBER ALONE"
+
+          Keep every text element inside safe margins.
+          Prioritize accurate readable text over decorative visuals.'
+
+          echo "===== GENERATING IMAGE ====="
+
+          RESPONSE=$(curl -sS https://api.openai.com/v1/images/generations \
+            -H "Authorization: Bearer ${OPENAI_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg prompt "$PROMPT" \
+              '{
+                model: "gpt-image-2",
+                prompt: $prompt,
+                size: "1024x1536",
+                quality: "high",
+                output_format: "png"
+              }'
+            )")
+
+          if echo "$RESPONSE" | jq -e '.error' >/dev/null; then
+            echo "OpenAI API returned an error:"
+            echo "$RESPONSE" | jq .
+            exit 1
+          fi
+
+          IMAGE_DATA=$(echo "$RESPONSE" | jq -r '.data[0].b64_json // empty')
+
+          if [ -z "$IMAGE_DATA" ]; then
+            echo "No image data returned."
+            echo "$RESPONSE" | jq .
+            exit 1
+          fi
+
+          echo "$IMAGE_DATA" | base64 --decode > generated/lipid_panel_infographic.png
+
+          echo "Image generated successfully."
+          file generated/lipid_panel_infographic.png
+
+      - name: Upload generated image
+        uses: actions/upload-artifact@v4
+        with:
+          name: mls-lipid-panel-infographic
+          path: generated/lipid_panel_infographic.png
+
+      - name: Save generated image to repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add generated/lipid_panel_infographic.png
+
+          if git diff --cached --quiet; then
+            echo "No image changes."
+          else
+            git commit -m "Generate lipid panel infographic"
+            git push
+          fi
+
           echo "===== MLS IMAGE GENERATOR COMPLETE ====="
