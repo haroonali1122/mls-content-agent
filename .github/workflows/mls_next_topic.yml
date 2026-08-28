@@ -18,14 +18,30 @@ jobs:
         run: |
           set -euo pipefail
 
-          FILE="data/mls_posts.json"
+          POSTS_FILE="data/mls_posts.json"
+          HISTORY_FILE="data/mls_topic_history.json"
 
-          if [ ! -f "$FILE" ]; then
-            echo "Database file not found: $FILE"
+          if [ ! -f "$POSTS_FILE" ]; then
+            echo "Database file not found: $POSTS_FILE"
             exit 1
           fi
 
-          TOTAL=$(jq 'length' "$FILE")
+          if [ ! -f "$HISTORY_FILE" ]; then
+            echo "Topic history file not found: $HISTORY_FILE"
+            exit 1
+          fi
+
+          if ! jq empty "$POSTS_FILE" >/dev/null 2>&1; then
+            echo "Invalid JSON: $POSTS_FILE"
+            exit 1
+          fi
+
+          if ! jq empty "$HISTORY_FILE" >/dev/null 2>&1; then
+            echo "Invalid JSON: $HISTORY_FILE"
+            exit 1
+          fi
+
+          TOTAL=$(jq 'length' "$POSTS_FILE")
 
           echo "===== MLS NEXT TOPIC ENGINE ====="
           echo "Historical posts analyzed: $TOTAL"
@@ -36,7 +52,7 @@ jobs:
           jq -r '
             .[]
             | "\(.shares_count // 0) shares | \(.title // "No title")"
-          ' "$FILE" \
+          ' "$POSTS_FILE" \
           | sort -nr \
           | sed -n '1,20p'
 
@@ -47,6 +63,7 @@ jobs:
           [
             {
               "topic": "How to Read a CBC Report",
+              "topic_family": "CBC",
               "category": "CBC / Hematology",
               "angle": "How to Read / Interpretation",
               "historical_average": 229.7,
@@ -57,6 +74,7 @@ jobs:
             },
             {
               "topic": "How to Read an HbA1c Report",
+              "topic_family": "HbA1c",
               "category": "Diabetes / Glucose",
               "angle": "How to Read / Interpretation",
               "historical_average": 170.9,
@@ -67,6 +85,7 @@ jobs:
             },
             {
               "topic": "How to Read ALT, AST and ALP",
+              "topic_family": "Liver Enzymes",
               "category": "Liver / Hepatitis",
               "angle": "How to Read / Interpretation",
               "historical_average": 145.9,
@@ -77,6 +96,7 @@ jobs:
             },
             {
               "topic": "Creatinine and eGFR Explained",
+              "topic_family": "Kidney Function",
               "category": "Kidney / Renal",
               "angle": "Test / Diagnosis",
               "historical_average": 196,
@@ -87,6 +107,7 @@ jobs:
             },
             {
               "topic": "Blood Glucose Results Explained",
+              "topic_family": "Blood Glucose",
               "category": "Diabetes / Glucose",
               "angle": "Test / Diagnosis",
               "historical_average": 134.75,
@@ -97,6 +118,7 @@ jobs:
             },
             {
               "topic": "Liver Function Test Interpretation",
+              "topic_family": "Liver Function Test",
               "category": "Liver / Hepatitis",
               "angle": "How to Read / Interpretation",
               "historical_average": 145.9,
@@ -107,6 +129,7 @@ jobs:
             },
             {
               "topic": "CBC Test and Diagnosis",
+              "topic_family": "CBC",
               "category": "CBC / Hematology",
               "angle": "Test / Diagnosis",
               "historical_average": 127.3,
@@ -117,6 +140,7 @@ jobs:
             },
             {
               "topic": "Blood Collection Guide",
+              "topic_family": "Blood Collection",
               "category": "Specimen Collection",
               "angle": "Guide / Steps",
               "historical_average": 130.3,
@@ -127,6 +151,7 @@ jobs:
             },
             {
               "topic": "TSH, T3 and T4 Explained",
+              "topic_family": "Thyroid",
               "category": "Thyroid",
               "angle": "How to Read / Interpretation",
               "historical_average": 81,
@@ -139,44 +164,100 @@ jobs:
           EOF
 
           echo ""
-          echo "===== BUILDING PUBLISHED TOPIC INDEX ====="
+          echo "===== HISTORY ====="
+
+          HISTORY_COUNT=$(jq 'length' "$HISTORY_FILE")
+          echo "Recorded topic/angle combinations: $HISTORY_COUNT"
+
+          if [ "$HISTORY_COUNT" -gt 0 ]; then
+            jq '.' "$HISTORY_FILE"
+          else
+            echo "No topic history recorded yet."
+          fi
+
+          echo ""
+          echo "===== BUILDING HISTORICAL TITLE INDEX ====="
 
           jq -r '
             .[]
             | (.title // "")
             | ascii_downcase
-          ' "$FILE" > /tmp/published_titles.txt
+          ' "$POSTS_FILE" > /tmp/published_titles.txt
 
           echo ""
-          echo "===== FILTERING PUBLISHED TOPICS ====="
+          echo "===== FILTERING CANDIDATES ====="
 
           jq -c '.[]' /tmp/candidates.json |
           while read -r candidate; do
-            TOPIC=$(echo "$candidate" | jq -r '.topic')
 
-            if grep -Fqi "$TOPIC" /tmp/published_titles.txt; then
-              echo "EXCLUDE: $TOPIC"
+            TOPIC=$(echo "$candidate" | jq -r '.topic')
+            TOPIC_FAMILY=$(echo "$candidate" | jq -r '.topic_family')
+            ANGLE=$(echo "$candidate" | jq -r '.angle')
+
+            TOPIC_USED=$(jq --arg family "$TOPIC_FAMILY" '
+              any(.[]; (.topic_family // "") == $family)
+            ' "$HISTORY_FILE")
+
+            ANGLE_USED=$(jq --arg family "$TOPIC_FAMILY" --arg angle "$ANGLE" '
+              any(
+                .[];
+                (.topic_family // "") == $family
+                and (.angle // "") == $angle
+              )
+            ' "$HISTORY_FILE")
+
+            TITLE_USED=$(grep -Fqi "$TOPIC" /tmp/published_titles.txt && echo true || echo false)
+
+            if [ "$TOPIC_USED" = "true" ]; then
+              echo "EXCLUDE topic family: $TOPIC_FAMILY"
+            elif [ "$ANGLE_USED" = "true" ]; then
+              echo "EXCLUDE topic + angle: $TOPIC | $ANGLE"
+            elif [ "$TITLE_USED" = "true" ]; then
+              echo "EXCLUDE existing title: $TOPIC"
             else
-              echo "KEEP: $TOPIC"
+              echo "KEEP: $TOPIC | $ANGLE"
             fi
+
           done
 
           echo ""
-          echo "===== REMOVING ALREADY PUBLISHED TOPICS ====="
+          echo "===== CREATING AVAILABLE CANDIDATES ====="
 
-          jq -c '
-            .[]
-          ' /tmp/candidates.json |
+          jq -c '.[]' /tmp/candidates.json |
           while read -r candidate; do
-            TOPIC=$(echo "$candidate" | jq -r '.topic')
 
-            if ! grep -Fqi "$TOPIC" /tmp/published_titles.txt; then
+            TOPIC=$(echo "$candidate" | jq -r '.topic')
+            TOPIC_FAMILY=$(echo "$candidate" | jq -r '.topic_family")
+            ANGLE=$(echo "$candidate" | jq -r '.angle')
+
+            TOPIC_USED=$(jq --arg family "$TOPIC_FAMILY" '
+              any(.[]; (.topic_family // "") == $family)
+            ' "$HISTORY_FILE")
+
+            ANGLE_USED=$(jq --arg family "$TOPIC_FAMILY" --arg angle "$ANGLE" '
+              any(
+                .[];
+                (.topic_family // "") == $family
+                and (.angle // "") == $angle
+              )
+            ' "$HISTORY_FILE")
+
+            TITLE_USED=false
+
+            if grep -Fqi "$TOPIC" /tmp/published_titles.txt; then
+              TITLE_USED=true
+            fi
+
+            if [ "$TOPIC_USED" != "true" ] &&
+               [ "$ANGLE_USED" != "true" ] &&
+               [ "$TITLE_USED" != "true" ]; then
               echo "$candidate"
             fi
+
           done > /tmp/available_candidates.jsonl
 
           if [ ! -s /tmp/available_candidates.jsonl ]; then
-            echo "No unpublished candidate topics remain."
+            echo "No unused candidate combinations remain."
             exit 1
           fi
 
@@ -187,7 +268,7 @@ jobs:
           jq '.' /tmp/available_candidates.json
 
           echo ""
-          echo "===== FINAL TOPIC CALCULATION ====="
+          echo "===== CALCULATING SCORES ====="
 
           jq '
             map(
@@ -213,9 +294,10 @@ jobs:
           jq '
             map({
               topic: .topic,
+              topic_family: .topic_family,
               category: .category,
               angle: .angle,
-              score: (.score | round),
+              score: .score,
               historical_average: .historical_average,
               historical_posts: .historical_posts,
               opportunity: .opportunity,
@@ -226,6 +308,7 @@ jobs:
           NEXT=$(jq '.[0]' /tmp/ranked_candidates.json)
 
           TOPIC=$(echo "$NEXT" | jq -r '.topic')
+          TOPIC_FAMILY=$(echo "$NEXT" | jq -r '.topic_family')
           CATEGORY=$(echo "$NEXT" | jq -r '.category')
           ANGLE=$(echo "$NEXT" | jq -r '.angle')
           SCORE=$(echo "$NEXT" | jq -r '.score')
@@ -236,7 +319,9 @@ jobs:
 
           echo ""
           echo "===== SELECTED NEXT TOPIC ====="
+
           echo "Topic: $TOPIC"
+          echo "Topic family: $TOPIC_FAMILY"
           echo "Category: $CATEGORY"
           echo "Angle: $ANGLE"
           echo "Final score: $SCORE"
@@ -245,6 +330,39 @@ jobs:
           echo "Historical posts: $HISTORICAL_POSTS"
           echo "Confidence: $CONFIDENCE"
 
+          echo ""
+          echo "===== UPDATING TOPIC HISTORY ====="
+
+          jq \
+            --arg topic "$TOPIC" \
+            --arg family "$TOPIC_FAMILY" \
+            --arg category "$CATEGORY" \
+            --arg angle "$ANGLE" \
+            --argjson score "$SCORE" \
+            --argjson opportunity "$OPPORTUNITY" \
+            --argjson historical_average "$HISTORICAL_AVG" \
+            --argjson historical_posts "$HISTORICAL_POSTS" \
+            --arg confidence "$CONFIDENCE" \
+            '. + [{
+              topic: $topic,
+              topic_family: $family,
+              category: $category,
+              angle: $angle,
+              score: $score,
+              opportunity: $opportunity,
+              historical_average: $historical_average,
+              historical_posts: $historical_posts,
+              confidence: $confidence,
+              status: "selected"
+            }]'
+            "$HISTORY_FILE" > /tmp/mls_topic_history.json
+
+          mv /tmp/mls_topic_history.json "$HISTORY_FILE"
+
+          echo ""
+          echo "===== UPDATED HISTORY ====="
+          jq '.' "$HISTORY_FILE"
+
           mkdir -p output
 
           cat > output/mls_next_topic.txt <<EOF
@@ -252,6 +370,9 @@ jobs:
 
           Topic:
           $TOPIC
+
+          Topic family:
+          $TOPIC_FAMILY
 
           Category:
           $CATEGORY
@@ -298,17 +419,19 @@ jobs:
           name: mls-next-topic
           path: output/mls_next_topic.txt
 
-      - name: Save next topic
+      - name: Save topic history and next topic
         run: |
+          set -euo pipefail
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add output/mls_next_topic.txt
+          git add data/mls_topic_history.json output/mls_next_topic.txt
 
           if git diff --cached --quiet; then
             echo "No changes."
           else
-            git commit -m "Add next MLS topic"
+            git commit -m "Update MLS topic history and next topic"
             git push
           fi
 
