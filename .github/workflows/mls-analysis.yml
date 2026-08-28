@@ -329,14 +329,14 @@ jobs:
               ) as $angle
 
             | {
-                key: ($topic + " | " + $angle),
+                topic_angle: ($topic + " | " + $angle),
                 shares: (.shares_count // 0)
               }
           ' "$FILE" \
           | jq -s '
-              group_by(.key)
+              group_by(.topic_angle)
               | map({
-                  topic_angle: .[0].key,
+                  topic_angle: .[0].topic_angle,
                   posts: length,
                   total_shares: (map(.shares) | add),
                   average_shares: ((map(.shares) | add) / length),
@@ -346,6 +346,13 @@ jobs:
                     | .[length / 2 | floor]
                   )
                 })
+              | sort_by(
+                  if .posts >= 5 then 0
+                  elif .posts >= 3 then 1
+                  elif .posts >= 2 then 2
+                  else 3
+                  end
+                )
               | sort_by(.average_shares)
               | reverse
               | .[0:30]
