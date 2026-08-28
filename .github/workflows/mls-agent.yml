@@ -1,12 +1,16 @@
-name: MLS Agent Test
+name: MLS Meta API Test
 
 on:
   workflow_dispatch:
 
 jobs:
-  test:
+  meta-api-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Test workflow
-        run: echo "MLS Content Agent is working"
+      - name: Test Meta Page API
+        env:
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+        run: |
+          curl -sS \
+            "https://graph.facebook.com/v26.0/1845536968999866?fields=id,name&access_token=${META_PAGE_ACCESS_TOKEN}"
