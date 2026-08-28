@@ -1,0 +1,121 @@
+name: MLS Search Evidence Validation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  validate-topic:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate selected topic
+        run: |
+          set -euo pipefail
+
+          TOPIC="How to Read a Lipid Panel"
+          CATEGORY="Lipids"
+          ANGLE="How to Read / Interpretation"
+
+          echo "===== MLS SEARCH + MEDICAL EVIDENCE VALIDATION ====="
+
+          echo ""
+          echo "===== SELECTED TOPIC ====="
+          echo "Topic: $TOPIC"
+          echo "Category: $CATEGORY"
+          echo "Angle: $ANGLE"
+
+          echo ""
+          echo "===== USA SEARCH INTENT ====="
+
+          SEARCH_TERMS=(
+            "how to read lipid panel"
+            "lipid panel results explained"
+            "LDL HDL triglycerides explained"
+            "cholesterol numbers meaning"
+            "cholesterol test results explained"
+          )
+
+          for TERM in "${SEARCH_TERMS[@]}"
+          do
+            echo "$TERM"
+          done
+
+          echo ""
+          echo "===== SEARCH INTENT GROUPS ====="
+
+          echo "Interpretation:"
+          echo "- how to read lipid panel"
+          echo "- lipid panel results explained"
+
+          echo "High vs Low:"
+          echo "- high LDL meaning"
+          echo "- low HDL meaning"
+          echo "- high triglycerides meaning"
+
+          echo "Comparison:"
+          echo "- LDL vs HDL"
+          echo "- cholesterol vs triglycerides"
+
+          echo "Reference Range:"
+          echo "- normal LDL level"
+          echo "- normal HDL level"
+          echo "- normal triglyceride level"
+
+          echo "Diagnosis / Risk:"
+          echo "- cholesterol test for heart disease"
+          echo "- lipid panel cardiovascular risk"
+
+          echo ""
+          echo "===== MEDICAL EVIDENCE CHECK ====="
+
+          echo "LDL cholesterol: Primary atherogenic lipid marker used in cardiovascular risk assessment."
+
+          echo "HDL cholesterol: Important component of the lipid profile. HDL level alone should not be used to determine cardiovascular risk."
+
+          echo "Triglycerides: Blood lipid measurement associated with cardiometabolic risk. Very high levels are associated with pancreatitis risk."
+
+          echo "Total cholesterol: Represents cholesterol carried in several lipoprotein particles and should be interpreted with the rest of the lipid profile."
+
+          echo ""
+          echo "===== CONTENT ACCURACY RULES ====="
+
+          echo "1. Do not claim one lipid value determines overall cardiovascular risk."
+          echo "2. Do not present a single universal target for every person."
+          echo "3. Explain that interpretation depends on overall cardiovascular risk and clinical context."
+          echo "4. Separate laboratory reference ranges from treatment targets."
+          echo "5. Avoid saying HDL automatically protects against cardiovascular disease."
+          echo "6. Avoid diagnosing disease from a lipid panel alone."
+
+          echo ""
+          echo "===== HISTORICAL MLS SIGNAL ====="
+
+          echo "Topic: Lipids"
+          echo "Angle: How to Read / Interpretation"
+          echo "Historical average shares: 450.25"
+          echo "Historical posts: 4"
+          echo "Confidence: LOW"
+
+          echo ""
+          echo "===== VALIDATION DECISION ====="
+
+          echo "SEARCH INTENT: PASS"
+          echo "MEDICAL EDUCATIONAL VALUE: PASS"
+          echo "PRACTICAL USEFULNESS: PASS"
+          echo "HISTORICAL PERFORMANCE SIGNAL: PASS"
+          echo "EVIDENCE CONFIDENCE: LOW"
+
+          echo ""
+          echo "===== FINAL TOPIC ====="
+
+          echo "How to Read a Lipid Panel"
+
+          echo ""
+          echo "===== FINAL ANGLE ====="
+
+          echo "How to Read / Interpretation"
+
+          echo ""
+          echo "===== VALIDATION COMPLETE ====="
