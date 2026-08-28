@@ -1,0 +1,96 @@
+name: MLS Content Writer
+
+on:
+  workflow_dispatch:
+
+jobs:
+  write-content:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate MLS content
+        run: |
+          set -euo pipefail
+
+          TOPIC="How to Read a Lipid Panel"
+          CATEGORY="Lipids"
+          ANGLE="How to Read / Interpretation"
+          TITLE="How to Read LDL, HDL and Triglycerides"
+
+          echo "===== MLS CONTENT WRITER ====="
+
+          echo ""
+          echo "===== SELECTED INPUT ====="
+          echo "Topic: $TOPIC"
+          echo "Category: $CATEGORY"
+          echo "Angle: $ANGLE"
+          echo "Title: $TITLE"
+
+          echo ""
+          echo "===== CONTENT HOOK ====="
+          echo "Your lipid panel has several numbers. Which ones actually matter?"
+
+          echo ""
+          echo "===== CORE PROBLEM ====="
+          echo "People often see LDL, HDL, triglycerides and total cholesterol on one report but do not know how to interpret the complete pattern."
+
+          echo ""
+          echo "===== CONTENT ====="
+
+          echo "LDL CHOLESTEROL"
+          echo "LDL is one of the main atherogenic cholesterol measures used in cardiovascular risk assessment."
+          echo "Its interpretation depends on overall cardiovascular risk and clinical context."
+
+          echo ""
+          echo "HDL CHOLESTEROL"
+          echo "HDL is one component of the lipid profile."
+          echo "HDL alone should not be used to determine overall cardiovascular risk."
+
+          echo ""
+          echo "TRIGLYCERIDES"
+          echo "Triglycerides measure a type of fat in the blood."
+          echo "Very high triglyceride levels have clinical significance and are associated with pancreatitis risk."
+
+          echo ""
+          echo "TOTAL CHOLESTEROL"
+          echo "Total cholesterol represents cholesterol carried in several lipoprotein particles."
+          echo "It should be interpreted together with the other lipid measurements."
+
+          echo ""
+          echo "THE COMPLETE PATTERN"
+          echo "Do not judge cardiovascular risk from one lipid value alone."
+          echo "Interpret the complete lipid profile together with the person's overall cardiovascular risk and clinical context."
+
+          echo ""
+          echo "===== ACCURACY RULES ====="
+          echo "Do not use one universal lipid target for every person."
+          echo "Separate laboratory reference ranges from treatment targets."
+          echo "Do not diagnose cardiovascular disease from a lipid panel alone."
+          echo "Do not describe HDL alone as complete cardiovascular protection."
+
+          echo ""
+          echo "===== FINAL TAKEAWAY ====="
+          echo "Read the complete lipid pattern, not one number alone."
+
+          echo ""
+          echo "===== SEO SEARCH TERMS ====="
+          echo "how to read lipid panel"
+          echo "lipid panel results explained"
+          echo "LDL HDL triglycerides explained"
+          echo "cholesterol numbers meaning"
+          echo "cholesterol test results explained"
+
+          echo ""
+          echo "===== CONTENT FORMAT ====="
+          echo "Educational infographic"
+          echo "4:5 vertical"
+          echo "Clear English"
+          echo "U.S. medical laboratory and health education audience"
+          echo "Problem-based interpretation"
+          echo "Text-first visual design"
+
+          echo ""
+          echo "===== MLS CONTENT WRITER COMPLETE ====="
