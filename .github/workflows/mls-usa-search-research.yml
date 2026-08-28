@@ -1,0 +1,120 @@
+name: MLS USA Search Research
+
+on:
+  workflow_dispatch:
+
+jobs:
+  usa-search-research:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Research USA Search Intent
+        run: |
+          set -euo pipefail
+
+          echo "===== MLS USA SEARCH RESEARCH ENGINE ====="
+
+          echo ""
+          echo "===== HIGH PRIORITY SEARCH CLUSTERS ====="
+
+          cat <<'EOF'
+          CBC / Hematology
+          - how to read CBC report
+          - CBC results explained
+          - CBC high and low meaning
+          - complete blood count interpretation
+          - what does CBC blood test show
+
+          Liver / Hepatitis
+          - how to read liver function test
+          - ALT AST results explained
+          - liver enzymes high and low
+          - hepatitis blood test results
+          - liver function test interpretation
+
+          Lipids
+          - cholesterol vs triglycerides
+          - how to read lipid panel
+          - LDL HDL triglycerides explained
+          - cholesterol numbers meaning
+          - lipid panel results explained
+
+          Diabetes / Glucose
+          - how to read HbA1c
+          - HbA1c results explained
+          - blood sugar levels explained
+          - fasting glucose vs HbA1c
+          - diabetes blood test results
+
+          Kidney / Renal
+          - how to read kidney function test
+          - creatinine and eGFR explained
+          - kidney blood test results
+          - BUN vs creatinine
+          - kidney function numbers explained
+
+          Thyroid
+          - how to read thyroid blood test
+          - TSH T3 T4 results explained
+          - thyroid test results meaning
+          - high TSH low TSH explained
+          EOF
+
+          echo ""
+          echo "===== SEARCH INTENT TYPES ====="
+
+          echo "1. Interpretation"
+          echo "   User wants to understand a test result."
+
+          echo "2. High vs Low"
+          echo "   User wants to know what abnormal values mean."
+
+          echo "3. Comparison"
+          echo "   User wants to understand two related tests."
+
+          echo "4. Reference Range"
+          echo "   User wants normal values."
+
+          echo "5. Diagnosis"
+          echo "   User wants to know which test detects a condition."
+
+          echo "6. Practical Guide"
+          echo "   User wants step-by-step interpretation."
+
+          echo ""
+          echo "===== SEARCH + HISTORICAL PERFORMANCE PRIORITY ====="
+
+          echo "Priority 1:"
+          echo "CBC / Hematology + How to Read / Interpretation"
+
+          echo "Priority 2:"
+          echo "Lipids + How to Read / Interpretation"
+
+          echo "Priority 3:"
+          echo "Liver / Hepatitis + How to Read / Interpretation"
+
+          echo "Priority 4:"
+          echo "Diabetes / Glucose + Test / Diagnosis"
+
+          echo "Priority 5:"
+          echo "CBC / Hematology + Test / Diagnosis"
+
+          echo "Priority 6:"
+          echo "Liver / Hepatitis + Guide / Steps"
+
+          echo ""
+          echo "===== RESEARCH RULE ====="
+
+          echo "Do not select a topic from search intent alone."
+          echo "Combine:"
+          echo "- Historical MLS shares"
+          echo "- Repeatable topic + angle pattern"
+          echo "- USA search intent"
+          echo "- Medical educational value"
+          echo "- Practical usefulness"
+
+          echo ""
+          echo "===== USA SEARCH RESEARCH COMPLETE ====="
