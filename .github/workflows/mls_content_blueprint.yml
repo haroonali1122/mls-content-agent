@@ -1,0 +1,135 @@
+name: MLS Content Blueprint
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-blueprint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate MLS content blueprint
+        run: |
+          set -euo pipefail
+
+          TOPIC="How to Read a Lipid Panel"
+          CATEGORY="Lipids"
+          ANGLE="How to Read / Interpretation"
+
+          echo "===== MLS CONTENT BLUEPRINT ====="
+
+          echo ""
+          echo "===== SELECTED TOPIC ====="
+          echo "Topic: $TOPIC"
+          echo "Category: $CATEGORY"
+          echo "Angle: $ANGLE"
+
+          echo ""
+          echo "===== PRIMARY HOOK ====="
+          echo "Your lipid panel has several numbers. Which ones actually matter?"
+
+          echo ""
+          echo "===== CORE PROBLEM ====="
+          echo "People often see LDL, HDL, triglycerides and total cholesterol on one report but do not know how to interpret the complete pattern."
+
+          echo ""
+          echo "===== MAIN CONTENT SECTIONS ====="
+
+          echo "1. LDL CHOLESTEROL"
+          echo "Explain what LDL represents and why it matters in cardiovascular risk assessment."
+
+          echo ""
+          echo "2. HDL CHOLESTEROL"
+          echo "Explain HDL as one component of the lipid profile."
+          echo "Do not describe HDL alone as a complete measure of cardiovascular protection."
+
+          echo ""
+          echo "3. TRIGLYCERIDES"
+          echo "Explain what triglycerides measure."
+          echo "Mention that very high triglycerides have clinical significance, including pancreatitis risk."
+
+          echo ""
+          echo "4. TOTAL CHOLESTEROL"
+          echo "Explain why total cholesterol should be interpreted together with the other lipid measurements."
+
+          echo ""
+          echo "5. THE COMPLETE PATTERN"
+          echo "Explain why one lipid number should not be used alone to determine overall cardiovascular risk."
+          echo "Clinical interpretation depends on overall cardiovascular risk and patient context."
+
+          echo ""
+          echo "===== REFERENCE RANGE RULE ====="
+          echo "Do not present one universal target for every person."
+          echo "Separate laboratory reference ranges from treatment targets."
+
+          echo ""
+          echo "===== DIAGNOSTIC RULE ====="
+          echo "A lipid panel alone does not establish a diagnosis."
+          echo "Clinical interpretation requires appropriate context."
+
+          echo ""
+          echo "===== VISUAL INFOGRAPHIC PLAN ====="
+
+          echo "Top banner:"
+          echo "HOW TO READ A LIPID PANEL"
+
+          echo ""
+          echo "Section 1:"
+          echo "LDL"
+          echo "What it means"
+          echo "Why it matters"
+
+          echo ""
+          echo "Section 2:"
+          echo "HDL"
+          echo "What it means"
+          echo "How to interpret it"
+
+          echo ""
+          echo "Section 3:"
+          echo "TRIGLYCERIDES"
+          echo "What they measure"
+          echo "Why high levels matter"
+
+          echo ""
+          echo "Section 4:"
+          echo "TOTAL CHOLESTEROL"
+          echo "Why it should be viewed with the complete panel"
+
+          echo ""
+          echo "Bottom banner:"
+          echo "READ THE COMPLETE LIPID PATTERN, NOT ONE NUMBER ALONE"
+
+          echo ""
+          echo "===== CONTENT STYLE ====="
+
+          echo "Format: Educational infographic"
+          echo "Layout: 4:5 vertical"
+          echo "Language: Clear English"
+          echo "Audience: U.S. medical laboratory and health education audience"
+          echo "Approach: Problem-based interpretation"
+          echo "Text priority: High"
+          echo "Visual priority: Supporting visuals only"
+
+          echo ""
+          echo "===== TITLE DIRECTIONS ====="
+
+          echo "1. How to Read a Lipid Panel"
+          echo "2. How to Read LDL, HDL and Triglycerides"
+          echo "3. Lipid Panel Results Explained"
+          echo "4. LDL, HDL, Triglycerides and Total Cholesterol Explained"
+
+          echo ""
+          echo "===== FINAL CONTENT BLUEPRINT ====="
+
+          echo "Topic: $TOPIC"
+          echo "Primary angle: $ANGLE"
+          echo "Primary hook: Your lipid panel has several numbers. Which ones actually matter?"
+          echo "Core teaching: LDL + HDL + triglycerides + total cholesterol"
+          echo "Core principle: Interpret the complete lipid profile in clinical context."
+
+          echo ""
+          echo "===== BLUEPRINT COMPLETE ====="
