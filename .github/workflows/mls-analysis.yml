@@ -72,68 +72,123 @@ jobs:
           ' "$FILE"
 
           echo ""
+          echo "===== TOPIC CLASSIFICATION ====="
+
+          jq -r '
+            .[]
+            | ((.title // "") + " " + (.message // "") | ascii_downcase) as $text
+            | if ($text | test("hba1c|hemoglobin a1c|cbc|hematocrit|hemoglobin|platelet|wbc|rbc|blood count|hematology|anemia"))
+              then "CBC / Hematology"
+              elif ($text | test("glucose|blood sugar|diabetes|prediabetes|insulin"))
+              then "Diabetes / Glucose"
+              elif ($text | test("cholesterol|triglyceride|lipid|ldl|hdl"))
+              then "Lipids"
+              elif ($text | test("hepatitis|liver|alt|ast|bilirubin"))
+              then "Liver / Hepatitis"
+              elif ($text | test("creatinine|kidney|renal|bun|egfr"))
+              then "Kidney / Renal"
+              elif ($text | test("thyroid|tsh|t3|t4"))
+              then "Thyroid"
+              elif ($text | test("culture|bacteria|microbiology|gram stain|microbial"))
+              then "Microbiology"
+              elif ($text | test("urine|urinalysis|urinary|stool|fecal"))
+              then "Urinalysis / Stool"
+              elif ($text | test("rf factor|anti-ccp|antibody|antigen|immunology|serology|sti|hiv|syphilis"))
+              then "Immunology / Serology"
+              elif ($text | test("pt|inr|aptt|coagulation|clotting factor|bleeding"))
+              then "Coagulation"
+              elif ($text | test("blood bank|blood group|abo|rh factor|crossmatch|transfusion"))
+              then "Blood Bank"
+              elif ($text | test("pcr|molecular|dna|rna|genetic"))
+              then "Molecular Biology"
+              elif ($text | test("histopathology|histology|biopsy|tissue|pathology"))
+              then "Histopathology"
+              elif ($text | test("specimen|blood collection|phlebotomy|sample collection"))
+              then "Specimen Collection"
+              elif ($text | test("safety|ppe|sterilization|disinfection|biohazard|waste disposal"))
+              then "Laboratory Safety"
+              else "General Lab / Other"
+              end
+          ' "$FILE" | sort | uniq -c | sort -nr
+
+          echo ""
+          echo "===== CONTENT ANGLE CLASSIFICATION ====="
+
+          jq -r '
+            .[]
+            | ((.title // "") + " " + (.message // "") | ascii_downcase) as $text
+            | if ($text | test("how to read|how to interpret|interpretation|what high and low means|what high or low means"))
+              then "How to Read / Interpretation"
+              elif ($text | test("\\bvs\\b|versus|difference between|compared with|comparison"))
+              then "X vs Y / Comparison"
+              elif ($text | test("high vs low|high and low|low and high|normal vs|normal and abnormal"))
+              then "High vs Low / Normal"
+              elif ($text | test("normal range|reference range|normal values|normal level|normal count"))
+              then "Normal / Reference Range"
+              elif ($text | test("causes|cause of|symptoms|signs and symptoms"))
+              then "Causes / Symptoms"
+              elif ($text | test("test for|testing|blood test|urine test|diagnosis|diagnostic"))
+              then "Test / Diagnosis"
+              elif ($text | test("guide|steps|how to|procedure|workflow"))
+              then "Guide / Steps"
+              elif ($text | test("mistake|mistakes|error|errors|wrong|false low|false high|falsely"))
+              then "Mistakes / Errors"
+              elif ($text | test("how many|identify|recognize|quiz|test yourself"))
+              then "Identify / Quiz"
+              elif ($text | test("remember|easy way|memory|mnemonic"))
+              then "Remember / Easy Way"
+              elif ($text | test("rules|safety|safe lab|precautions|ppe|sterilization"))
+              then "Rules / Safety"
+              else "General Explanation"
+              end
+          ' "$FILE" | sort | uniq -c | sort -nr
+
+          echo ""
           echo "===== CONTENT ANGLE SHARE PERFORMANCE ====="
 
           jq -r '
             .[]
-            | (
-                (.title // "") + " " + (.message // "")
-                | ascii_downcase
-              ) as $text
+            | ((.title // "") + " " + (.message // "") | ascii_downcase) as $text
             | (
                 if ($text | test("how to read|how to interpret|interpretation|what high and low means|what high or low means"))
                 then "How to Read / Interpretation"
-
                 elif ($text | test("\\bvs\\b|versus|difference between|compared with|comparison"))
                 then "X vs Y / Comparison"
-
                 elif ($text | test("high vs low|high and low|low and high|normal vs|normal and abnormal"))
                 then "High vs Low / Normal"
-
                 elif ($text | test("normal range|reference range|normal values|normal level|normal count"))
                 then "Normal / Reference Range"
-
                 elif ($text | test("causes|cause of|symptoms|signs and symptoms"))
                 then "Causes / Symptoms"
-
                 elif ($text | test("test for|testing|blood test|urine test|diagnosis|diagnostic"))
                 then "Test / Diagnosis"
-
                 elif ($text | test("guide|steps|how to|procedure|workflow"))
                 then "Guide / Steps"
-
                 elif ($text | test("mistake|mistakes|error|errors|wrong|false low|false high|falsely"))
                 then "Mistakes / Errors"
-
                 elif ($text | test("how many|identify|recognize|quiz|test yourself"))
                 then "Identify / Quiz"
-
                 elif ($text | test("remember|easy way|memory|mnemonic"))
                 then "Remember / Easy Way"
-
                 elif ($text | test("rules|safety|safe lab|precautions|ppe|sterilization"))
                 then "Rules / Safety"
-
                 else "General Explanation"
                 end
               ) as $angle
-            | [$angle, .shares_count]
-            | @tsv
+            | {
+                angle: $angle,
+                shares: (.shares_count // 0)
+              }
           ' "$FILE" \
-          | jq -R -s '
-              split("\n")
-              | map(select(length > 0))
-              | map(split("\t"))
-              | group_by(.[0])
+          | jq -s '
+              group_by(.angle)
               | map({
-                  angle: .[0][0],
+                  angle: .[0].angle,
                   posts: length,
-                  total_shares: (map(.[1] | tonumber) | add),
-                  average_shares: (
-                    (map(.[1] | tonumber) | add) / length
-                  ),
+                  total_shares: (map(.shares) | add),
+                  average_shares: ((map(.shares) | add) / length),
                   median_shares: (
-                    map(.[1] | tonumber)
+                    map(.shares)
                     | sort
                     | .[length / 2 | floor]
                   )
@@ -143,54 +198,194 @@ jobs:
           '
 
           echo ""
+          echo "===== TOPIC SHARE PERFORMANCE ====="
+
+          jq -r '
+            .[]
+            | ((.title // "") + " " + (.message // "") | ascii_downcase) as $text
+            | (
+                if ($text | test("hba1c|hemoglobin a1c|cbc|hematocrit|hemoglobin|platelet|wbc|rbc|blood count|hematology|anemia"))
+                then "CBC / Hematology"
+                elif ($text | test("glucose|blood sugar|diabetes|prediabetes|insulin"))
+                then "Diabetes / Glucose"
+                elif ($text | test("cholesterol|triglyceride|lipid|ldl|hdl"))
+                then "Lipids"
+                elif ($text | test("hepatitis|liver|alt|ast|bilirubin"))
+                then "Liver / Hepatitis"
+                elif ($text | test("creatinine|kidney|renal|bun|egfr"))
+                then "Kidney / Renal"
+                elif ($text | test("thyroid|tsh|t3|t4"))
+                then "Thyroid"
+                elif ($text | test("culture|bacteria|microbiology|gram stain|microbial"))
+                then "Microbiology"
+                elif ($text | test("urine|urinalysis|urinary|stool|fecal"))
+                then "Urinalysis / Stool"
+                elif ($text | test("rf factor|anti-ccp|antibody|antigen|immunology|serology|sti|hiv|syphilis"))
+                then "Immunology / Serology"
+                elif ($text | test("pt|inr|aptt|coagulation|clotting factor|bleeding"))
+                then "Coagulation"
+                elif ($text | test("blood bank|blood group|abo|rh factor|crossmatch|transfusion"))
+                then "Blood Bank"
+                elif ($text | test("pcr|molecular|dna|rna|genetic"))
+                then "Molecular Biology"
+                elif ($text | test("histopathology|histology|biopsy|tissue|pathology"))
+                then "Histopathology"
+                elif ($text | test("specimen|blood collection|phlebotomy|sample collection"))
+                then "Specimen Collection"
+                elif ($text | test("safety|ppe|sterilization|disinfection|biohazard|waste disposal"))
+                then "Laboratory Safety"
+                else "General Lab / Other"
+                end
+              ) as $topic
+            | {
+                topic: $topic,
+                shares: (.shares_count // 0)
+              }
+          ' "$FILE" \
+          | jq -s '
+              group_by(.topic)
+              | map({
+                  topic: .[0].topic,
+                  posts: length,
+                  total_shares: (map(.shares) | add),
+                  average_shares: ((map(.shares) | add) / length),
+                  median_shares: (
+                    map(.shares)
+                    | sort
+                    | .[length / 2 | floor]
+                  )
+                })
+              | sort_by(.average_shares)
+              | reverse
+          '
+
+          echo ""
+          echo "===== TOPIC + CONTENT ANGLE SHARE PERFORMANCE ====="
+
+          jq -r '
+            .[]
+            | ((.title // "") + " " + (.message // "") | ascii_downcase) as $text
+
+            | (
+                if ($text | test("hba1c|hemoglobin a1c|cbc|hematocrit|hemoglobin|platelet|wbc|rbc|blood count|hematology|anemia"))
+                then "CBC / Hematology"
+                elif ($text | test("glucose|blood sugar|diabetes|prediabetes|insulin"))
+                then "Diabetes / Glucose"
+                elif ($text | test("cholesterol|triglyceride|lipid|ldl|hdl"))
+                then "Lipids"
+                elif ($text | test("hepatitis|liver|alt|ast|bilirubin"))
+                then "Liver / Hepatitis"
+                elif ($text | test("creatinine|kidney|renal|bun|egfr"))
+                then "Kidney / Renal"
+                elif ($text | test("thyroid|tsh|t3|t4"))
+                then "Thyroid"
+                elif ($text | test("culture|bacteria|microbiology|gram stain|microbial"))
+                then "Microbiology"
+                elif ($text | test("urine|urinalysis|urinary|stool|fecal"))
+                then "Urinalysis / Stool"
+                elif ($text | test("rf factor|anti-ccp|antibody|antigen|immunology|serology|sti|hiv|syphilis"))
+                then "Immunology / Serology"
+                elif ($text | test("pt|inr|aptt|coagulation|clotting factor|bleeding"))
+                then "Coagulation"
+                elif ($text | test("blood bank|blood group|abo|rh factor|crossmatch|transfusion"))
+                then "Blood Bank"
+                elif ($text | test("pcr|molecular|dna|rna|genetic"))
+                then "Molecular Biology"
+                elif ($text | test("histopathology|histology|biopsy|tissue|pathology"))
+                then "Histopathology"
+                elif ($text | test("specimen|blood collection|phlebotomy|sample collection"))
+                then "Specimen Collection"
+                elif ($text | test("safety|ppe|sterilization|disinfection|biohazard|waste disposal"))
+                then "Laboratory Safety"
+                else "General Lab / Other"
+                end
+              ) as $topic
+
+            | (
+                if ($text | test("how to read|how to interpret|interpretation|what high and low means|what high or low means"))
+                then "How to Read / Interpretation"
+                elif ($text | test("\\bvs\\b|versus|difference between|compared with|comparison"))
+                then "X vs Y / Comparison"
+                elif ($text | test("high vs low|high and low|low and high|normal vs|normal and abnormal"))
+                then "High vs Low / Normal"
+                elif ($text | test("normal range|reference range|normal values|normal level|normal count"))
+                then "Normal / Reference Range"
+                elif ($text | test("causes|cause of|symptoms|signs and symptoms"))
+                then "Causes / Symptoms"
+                elif ($text | test("test for|testing|blood test|urine test|diagnosis|diagnostic"))
+                then "Test / Diagnosis"
+                elif ($text | test("guide|steps|how to|procedure|workflow"))
+                then "Guide / Steps"
+                elif ($text | test("mistake|mistakes|error|errors|wrong|false low|false high|falsely"))
+                then "Mistakes / Errors"
+                elif ($text | test("how many|identify|recognize|quiz|test yourself"))
+                then "Identify / Quiz"
+                elif ($text | test("remember|easy way|memory|mnemonic"))
+                then "Remember / Easy Way"
+                elif ($text | test("rules|safety|safe lab|precautions|ppe|sterilization"))
+                then "Rules / Safety"
+                else "General Explanation"
+                end
+              ) as $angle
+
+            | {
+                key: ($topic + " | " + $angle),
+                shares: (.shares_count // 0)
+              }
+          ' "$FILE" \
+          | jq -s '
+              group_by(.key)
+              | map({
+                  topic_angle: .[0].key,
+                  posts: length,
+                  total_shares: (map(.shares) | add),
+                  average_shares: ((map(.shares) | add) / length),
+                  median_shares: (
+                    map(.shares)
+                    | sort
+                    | .[length / 2 | floor]
+                  )
+                })
+              | sort_by(.average_shares)
+              | reverse
+              | .[0:30]
+          '
+
+          echo ""
           echo "===== TOP POSTS BY CONTENT ANGLE ====="
 
           jq -r '
             .[]
-            | (
-                (.title // "") + " " + (.message // "")
-                | ascii_downcase
-              ) as $text
+            | ((.title // "") + " " + (.message // "") | ascii_downcase) as $text
             | (
                 if ($text | test("how to read|how to interpret|interpretation|what high and low means|what high or low means"))
                 then "How to Read / Interpretation"
-
                 elif ($text | test("\\bvs\\b|versus|difference between|compared with|comparison"))
                 then "X vs Y / Comparison"
-
                 elif ($text | test("high vs low|high and low|low and high|normal vs|normal and abnormal"))
                 then "High vs Low / Normal"
-
                 elif ($text | test("normal range|reference range|normal values|normal level|normal count"))
                 then "Normal / Reference Range"
-
                 elif ($text | test("causes|cause of|symptoms|signs and symptoms"))
                 then "Causes / Symptoms"
-
                 elif ($text | test("test for|testing|blood test|urine test|diagnosis|diagnostic"))
                 then "Test / Diagnosis"
-
                 elif ($text | test("guide|steps|how to|procedure|workflow"))
                 then "Guide / Steps"
-
                 elif ($text | test("mistake|mistakes|error|errors|wrong|false low|false high|falsely"))
                 then "Mistakes / Errors"
-
                 elif ($text | test("how many|identify|recognize|quiz|test yourself"))
                 then "Identify / Quiz"
-
                 elif ($text | test("remember|easy way|memory|mnemonic"))
                 then "Remember / Easy Way"
-
                 elif ($text | test("rules|safety|safe lab|precautions|ppe|sterilization"))
                 then "Rules / Safety"
-
                 else "General Explanation"
                 end
               ) as $angle
             | {
                 angle: $angle,
-                shares: .shares_count,
+                shares: (.shares_count // 0),
                 title: (.title // "No title")
               }
             | "\(.angle)\t\(.shares)\t\(.title)"
