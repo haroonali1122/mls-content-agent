@@ -68,10 +68,11 @@ jobs:
           echo "===== TITLE COVERAGE ====="
 
           jq -r '
-            if (.title != null and .title != "")
-            then "HAS_TITLE"
-            else "NO_TITLE"
-            end
+            .[]
+            | if (.title != null and .title != "")
+              then "HAS_TITLE"
+              else "NO_TITLE"
+              end
           ' "$FILE" | sort | uniq -c
 
           echo ""
