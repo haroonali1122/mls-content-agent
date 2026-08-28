@@ -139,7 +139,7 @@ jobs:
           EOF
 
           echo ""
-          echo "===== FILTERING PUBLISHED TOPICS ====="
+          echo "===== BUILDING PUBLISHED TOPIC INDEX ====="
 
           jq -r '
             .[]
@@ -148,18 +148,43 @@ jobs:
           ' "$FILE" > /tmp/published_titles.txt
 
           echo ""
-          echo "===== CANDIDATE STATUS ====="
+          echo "===== FILTERING PUBLISHED TOPICS ====="
 
           jq -c '.[]' /tmp/candidates.json |
           while read -r candidate; do
             TOPIC=$(echo "$candidate" | jq -r '.topic')
 
             if grep -Fqi "$TOPIC" /tmp/published_titles.txt; then
-              echo "Already published: $TOPIC"
+              echo "EXCLUDE: $TOPIC"
             else
-              echo "Available: $TOPIC"
+              echo "KEEP: $TOPIC"
             fi
           done
+
+          echo ""
+          echo "===== REMOVING ALREADY PUBLISHED TOPICS ====="
+
+          jq -c '
+            .[]
+          ' /tmp/candidates.json |
+          while read -r candidate; do
+            TOPIC=$(echo "$candidate" | jq -r '.topic')
+
+            if ! grep -Fqi "$TOPIC" /tmp/published_titles.txt; then
+              echo "$candidate"
+            fi
+          done > /tmp/available_candidates.jsonl
+
+          if [ ! -s /tmp/available_candidates.jsonl ]; then
+            echo "No unpublished candidate topics remain."
+            exit 1
+          fi
+
+          jq -s '.' /tmp/available_candidates.jsonl > /tmp/available_candidates.json
+
+          echo ""
+          echo "===== AVAILABLE CANDIDATES ====="
+          jq '.' /tmp/available_candidates.json
 
           echo ""
           echo "===== FINAL TOPIC CALCULATION ====="
@@ -180,7 +205,7 @@ jobs:
             )
             | sort_by(.score)
             | reverse
-          ' /tmp/candidates.json > /tmp/ranked_candidates.json
+          ' /tmp/available_candidates.json > /tmp/ranked_candidates.json
 
           echo ""
           echo "===== FINAL RANKING ====="
@@ -211,7 +236,6 @@ jobs:
 
           echo ""
           echo "===== SELECTED NEXT TOPIC ====="
-
           echo "Topic: $TOPIC"
           echo "Category: $CATEGORY"
           echo "Angle: $ANGLE"
