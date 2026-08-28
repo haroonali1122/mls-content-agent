@@ -195,8 +195,8 @@ jobs:
               elif (.text | test("rules|safety|safe lab|precautions|ppe|sterilization"))
               then "Rules / Safety"
               else "General Explanation"
-              end as $angle
-            | {angle: $angle, shares: .shares_count}
+              end
+            | {angle: ., shares: .shares_count}
           ' "$FILE" \
           | jq -s '
             group_by(.angle)
