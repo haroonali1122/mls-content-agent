@@ -1,57 +1,71 @@
-name: MLS Meta API Posts Read Test
+name: MLS Meta API Pagination Test
 
 on:
   workflow_dispatch:
 
 jobs:
-  test-meta-posts:
+  pagination-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Test basic post fields
+      - name: Read first page
         env:
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
         run: |
+          set -euo pipefail
+
+          PAGE_ID="1845536968999866"
+          API_VERSION="v26.0"
+
           RESPONSE=$(curl -sS --get \
-            "https://graph.facebook.com/v26.0/1845536968999866/posts" \
+            "https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/posts" \
             --data-urlencode "fields=id,message,created_time" \
             --data-urlencode "limit=5" \
             --data-urlencode "access_token=${META_PAGE_ACCESS_TOKEN}")
 
           echo "$RESPONSE" | jq .
 
-      - name: Test shares field
+          echo "FIRST_PAGE_COUNT=$(echo "$RESPONSE" | jq '.data | length')"
+
+          NEXT_URL=$(echo "$RESPONSE" | jq -r '.paging.next // empty')
+
+          if [ -n "$NEXT_URL" ]; then
+            echo "NEXT_PAGE=AVAILABLE"
+          else
+            echo "NEXT_PAGE=NOT_AVAILABLE"
+          fi
+
+      - name: Read second page
         env:
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
         run: |
-          RESPONSE=$(curl -sS --get \
-            "https://graph.facebook.com/v26.0/1845536968999866/posts" \
-            --data-urlencode "fields=id,shares" \
+          set -euo pipefail
+
+          PAGE_ID="1845536968999866"
+          API_VERSION="v26.0"
+
+          FIRST=$(curl -sS --get \
+            "https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/posts" \
+            --data-urlencode "fields=id,message,created_time" \
             --data-urlencode "limit=5" \
             --data-urlencode "access_token=${META_PAGE_ACCESS_TOKEN}")
 
-          echo "$RESPONSE" | jq .
+          NEXT_URL=$(echo "$FIRST" | jq -r '.paging.next // empty')
 
-      - name: Test reactions field
-        env:
-          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
-        run: |
-          RESPONSE=$(curl -sS --get \
-            "https://graph.facebook.com/v26.0/1845536968999866/posts" \
-            --data-urlencode "fields=id,reactions" \
-            --data-urlencode "limit=5" \
-            --data-urlencode "access_token=${META_PAGE_ACCESS_TOKEN}")
+          if [ -z "$NEXT_URL" ]; then
+            echo "SECOND_PAGE=NOT_AVAILABLE"
+            exit 0
+          fi
 
-          echo "$RESPONSE" | jq .
+          SECOND=$(curl -sS "$NEXT_URL")
 
-      - name: Test comments field
-        env:
-          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
-        run: |
-          RESPONSE=$(curl -sS --get \
-            "https://graph.facebook.com/v26.0/1845536968999866/posts" \
-            --data-urlencode "fields=id,comments" \
-            --data-urlencode "limit=5" \
-            --data-urlencode "access_token=${META_PAGE_ACCESS_TOKEN}")
+          echo "$SECOND" | jq .
 
-          echo "$RESPONSE" | jq .
+          echo "SECOND_PAGE_COUNT=$(echo "$SECOND" | jq '.data | length')"
+
+          if echo "$SECOND" | jq -e '.error' >/dev/null; then
+            echo "SECOND_PAGE=FAIL"
+            exit 1
+          else
+            echo "SECOND_PAGE=PASS"
+          fi
