@@ -56,7 +56,13 @@ jobs:
           jq -s '
             unique_by(.id)
             | map(
-                .shares_count = (.shares.count // 0)
+                .title = (
+                  .message
+                  | split("\n")
+                  | map(select(length > 0))
+                  | .[0]
+                )
+                | .shares_count = (.shares.count // 0)
                 | del(.shares)
               )
             | sort_by(.created_time)
@@ -68,6 +74,9 @@ jobs:
 
           echo "Posts with share counts:"
           jq '[.[] | select(.shares_count != null)] | length' data/mls_posts.json
+
+          echo "Posts with titles:"
+          jq '[.[] | select(.title != null and .title != "")] | length' data/mls_posts.json
 
           echo "Database preview:"
           jq '.[0:5]' data/mls_posts.json
@@ -82,7 +91,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No database changes."
           else
-            git commit -m "Add share counts to MLS post database"
+            git commit -m "Add titles to MLS post database"
             git push
           fi
-          
