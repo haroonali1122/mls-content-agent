@@ -1,14 +1,20 @@
-name: MLS Meta API Pagination Test
+name: MLS Post Database
 
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  pagination-test:
+  collect-posts:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Read first page
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Collect Page posts
         env:
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
         run: |
@@ -16,56 +22,59 @@ jobs:
 
           PAGE_ID="1845536968999866"
           API_VERSION="v26.0"
+          URL="https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/posts"
 
-          RESPONSE=$(curl -sS --get \
-            "https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/posts" \
-            --data-urlencode "fields=id,message,created_time" \
-            --data-urlencode "limit=5" \
-            --data-urlencode "access_token=${META_PAGE_ACCESS_TOKEN}")
+          mkdir -p data
 
-          echo "$RESPONSE" | jq .
+          echo '[]' > data/mls_posts.json
 
-          echo "FIRST_PAGE_COUNT=$(echo "$RESPONSE" | jq '.data | length')"
+          for PAGE in 1 2 3 4 5; do
+            echo "Reading page ${PAGE}..."
 
-          NEXT_URL=$(echo "$RESPONSE" | jq -r '.paging.next // empty')
+            RESPONSE=$(curl -sS --get "$URL" \
+              --data-urlencode "fields=id,message,created_time" \
+              --data-urlencode "limit=100" \
+              --data-urlencode "access_token=${META_PAGE_ACCESS_TOKEN}")
 
-          if [ -n "$NEXT_URL" ]; then
-            echo "NEXT_PAGE=AVAILABLE"
-          else
-            echo "NEXT_PAGE=NOT_AVAILABLE"
+            if echo "$RESPONSE" | jq -e '.error' >/dev/null; then
+              echo "Meta API returned an error:"
+              echo "$RESPONSE" | jq .
+              exit 1
+            fi
+
+            echo "$RESPONSE" | jq -c '.data[]' >> /tmp/mls_posts.jsonl
+
+            NEXT_URL=$(echo "$RESPONSE" | jq -r '.paging.next // empty')
+
+            if [ -z "$NEXT_URL" ]; then
+              echo "No more pages."
+              break
+            fi
+
+            URL="$NEXT_URL"
+          done
+
+          if [ -f /tmp/mls_posts.jsonl ]; then
+            jq -s 'unique_by(.id) | sort_by(.created_time) | reverse' \
+              /tmp/mls_posts.jsonl > data/mls_posts.json
           fi
 
-      - name: Read second page
-        env:
-          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+          echo "Collected posts:"
+          jq 'length' data/mls_posts.json
+
+          echo "Database preview:"
+          jq '.[0:5]' data/mls_posts.json
+
+      - name: Save database
         run: |
-          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          PAGE_ID="1845536968999866"
-          API_VERSION="v26.0"
+          git add data/mls_posts.json
 
-          FIRST=$(curl -sS --get \
-            "https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/posts" \
-            --data-urlencode "fields=id,message,created_time" \
-            --data-urlencode "limit=5" \
-            --data-urlencode "access_token=${META_PAGE_ACCESS_TOKEN}")
-
-          NEXT_URL=$(echo "$FIRST" | jq -r '.paging.next // empty')
-
-          if [ -z "$NEXT_URL" ]; then
-            echo "SECOND_PAGE=NOT_AVAILABLE"
-            exit 0
-          fi
-
-          SECOND=$(curl -sS "$NEXT_URL")
-
-          echo "$SECOND" | jq .
-
-          echo "SECOND_PAGE_COUNT=$(echo "$SECOND" | jq '.data | length')"
-
-          if echo "$SECOND" | jq -e '.error' >/dev/null; then
-            echo "SECOND_PAGE=FAIL"
-            exit 1
+          if git diff --cached --quiet; then
+            echo "No database changes."
           else
-            echo "SECOND_PAGE=PASS"
+            git commit -m "Update MLS post database"
+            git push
           fi
