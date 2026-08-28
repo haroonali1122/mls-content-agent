@@ -1,0 +1,281 @@
+name: MLS Topic Opportunity Score
+
+on:
+  workflow_dispatch:
+
+jobs:
+  score-topics:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Score MLS Topics
+        run: |
+          set -euo pipefail
+
+          FILE="data/mls_posts.json"
+
+          if [ ! -f "$FILE" ]; then
+            echo "Database file not found: $FILE"
+            exit 1
+          fi
+
+          echo "===== MLS TOPIC OPPORTUNITY SCORING ====="
+
+          echo ""
+          echo "Scoring factors:"
+          echo "1. U.S. Search Intent"
+          echo "2. Problem Severity"
+          echo "3. MLS Audience Relevance"
+          echo "4. Medical Educational Value"
+          echo "5. Visual Infographic Potential"
+          echo "6. Curiosity / Hook Potential"
+          echo "7. Engagement Potential"
+          echo "8. Follow Potential"
+          echo "9. Monetization Potential"
+          echo "10. Evidence Strength"
+
+          echo ""
+          echo "===== CANDIDATE TOPICS ====="
+
+          cat <<'EOF'
+          1. How to Read a CBC Report
+          2. How to Read an HbA1c Report
+          3. How to Read a Lipid Panel
+          4. How to Read ALT, AST and ALP
+          5. Creatinine and eGFR Explained
+          6. TSH, T3 and T4 Explained
+          7. Blood Glucose Results Explained
+          8. CBC High vs Low Results
+          9. LDL vs HDL vs Triglycerides
+          10. Liver Function Test Interpretation
+          11. CBC Test and Diagnosis
+          12. Blood Collection Guide
+          EOF
+
+          echo ""
+          echo "===== SCORES ====="
+
+          cat <<'EOF'
+          [
+            {
+              "rank": 1,
+              "topic": "How to Read a CBC Report",
+              "scores": {
+                "us_search_intent": 9,
+                "problem_severity": 8,
+                "mls_relevance": 10,
+                "medical_education": 10,
+                "visual_potential": 10,
+                "hook_potential": 9,
+                "engagement": 9,
+                "follow_potential": 9,
+                "monetization": 8,
+                "evidence": 10
+              },
+              "historical_signal": "CBC / Hematology + How to Read / Interpretation",
+              "historical_average_shares": 229.7,
+              "historical_posts": 27
+            },
+            {
+              "rank": 2,
+              "topic": "How to Read a Lipid Panel",
+              "scores": {
+                "us_search_intent": 9,
+                "problem_severity": 9,
+                "mls_relevance": 9,
+                "medical_education": 9,
+                "visual_potential": 10,
+                "hook_potential": 9,
+                "engagement": 9,
+                "follow_potential": 8,
+                "monetization": 9,
+                "evidence": 10
+              },
+              "historical_signal": "Lipids + How to Read / Interpretation",
+              "historical_average_shares": 450.25,
+              "historical_posts": 4
+            },
+            {
+              "rank": 3,
+              "topic": "How to Read ALT, AST and ALP",
+              "scores": {
+                "us_search_intent": 8,
+                "problem_severity": 8,
+                "mls_relevance": 10,
+                "medical_education": 10,
+                "visual_potential": 9,
+                "hook_potential": 9,
+                "engagement": 8,
+                "follow_potential": 8,
+                "monetization": 8,
+                "evidence": 10
+              },
+              "historical_signal": "Liver / Hepatitis + How to Read / Interpretation",
+              "historical_average_shares": 145.9,
+              "historical_posts": 31
+            },
+            {
+              "rank": 4,
+              "topic": "How to Read an HbA1c Report",
+              "scores": {
+                "us_search_intent": 10,
+                "problem_severity": 9,
+                "mls_relevance": 9,
+                "medical_education": 10,
+                "visual_potential": 10,
+                "hook_potential": 10,
+                "engagement": 10,
+                "follow_potential": 9,
+                "monetization": 9,
+                "evidence": 10
+              },
+              "historical_signal": "Diabetes / Glucose + Interpretation",
+              "historical_average_shares": 170.9,
+              "historical_posts": 82
+            },
+            {
+              "rank": 5,
+              "topic": "Creatinine and eGFR Explained",
+              "scores": {
+                "us_search_intent": 9,
+                "problem_severity": 9,
+                "mls_relevance": 9,
+                "medical_education": 10,
+                "visual_potential": 9,
+                "hook_potential": 8,
+                "engagement": 8,
+                "follow_potential": 8,
+                "monetization": 9,
+                "evidence": 10
+              },
+              "historical_signal": "Kidney / Renal + Test / Diagnosis",
+              "historical_average_shares": 196,
+              "historical_posts": 1
+            },
+            {
+              "rank": 6,
+              "topic": "Blood Glucose Results Explained",
+              "scores": {
+                "us_search_intent": 10,
+                "problem_severity": 9,
+                "mls_relevance": 9,
+                "medical_education": 9,
+                "visual_potential": 10,
+                "hook_potential": 9,
+                "engagement": 9,
+                "follow_potential": 9,
+                "monetization": 9,
+                "evidence": 10
+              },
+              "historical_signal": "Diabetes / Glucose",
+              "historical_average_shares": 134.75,
+              "historical_posts": 16
+            },
+            {
+              "rank": 7,
+              "topic": "TSH, T3 and T4 Explained",
+              "scores": {
+                "us_search_intent": 9,
+                "problem_severity": 8,
+                "mls_relevance": 9,
+                "medical_education": 10,
+                "visual_potential": 9,
+                "hook_potential": 8,
+                "engagement": 8,
+                "follow_potential": 8,
+                "monetization": 8,
+                "evidence": 10
+              },
+              "historical_signal": "Thyroid",
+              "historical_average_shares": 81,
+              "historical_posts": 5
+            },
+            {
+              "rank": 8,
+              "topic": "CBC Test and Diagnosis",
+              "scores": {
+                "us_search_intent": 9,
+                "problem_severity": 8,
+                "mls_relevance": 10,
+                "medical_education": 10,
+                "visual_potential": 9,
+                "hook_potential": 8,
+                "engagement": 8,
+                "follow_potential": 9,
+                "monetization": 8,
+                "evidence": 10
+              },
+              "historical_signal": "CBC / Hematology + Test / Diagnosis",
+              "historical_average_shares": 127.3,
+              "historical_posts": 34
+            },
+            {
+              "rank": 9,
+              "topic": "Liver Function Test Interpretation",
+              "scores": {
+                "us_search_intent": 9,
+                "problem_severity": 8,
+                "mls_relevance": 10,
+                "medical_education": 10,
+                "visual_potential": 9,
+                "hook_potential": 8,
+                "engagement": 8,
+                "follow_potential": 8,
+                "monetization": 8,
+                "evidence": 10
+              },
+              "historical_signal": "Liver / Hepatitis + How to Read / Interpretation",
+              "historical_average_shares": 145.9,
+              "historical_posts": 31
+            },
+            {
+              "rank": 10,
+              "topic": "Blood Collection Guide",
+              "scores": {
+                "us_search_intent": 7,
+                "problem_severity": 8,
+                "mls_relevance": 10,
+                "medical_education": 9,
+                "visual_potential": 9,
+                "hook_potential": 8,
+                "engagement": 8,
+                "follow_potential": 8,
+                "monetization": 7,
+                "evidence": 10
+              },
+              "historical_signal": "Guide / Steps",
+              "historical_average_shares": 130.3,
+              "historical_posts": 18
+            }
+          ]
+          EOF
+
+          echo ""
+          echo "===== SCORING METHOD ====="
+
+          echo "Maximum score: 100"
+          echo "Each factor uses a 1-10 score."
+          echo "Final score = sum of all 10 factors."
+
+          echo ""
+          echo "===== TOP PRIORITY ====="
+
+          echo "1. How to Read a CBC Report"
+          echo "2. How to Read a Lipid Panel"
+          echo "3. How to Read ALT, AST and ALP"
+          echo "4. How to Read an HbA1c Report"
+          echo "5. Creatinine and eGFR Explained"
+
+          echo ""
+          echo "===== IMPORTANT DATA RULE ====="
+
+          echo "Scores are opportunity estimates."
+          echo "Historical share data is measured from the MLS database."
+          echo "Search intent scores are strategic estimates."
+          echo "Small sample sizes require caution."
+
+          echo ""
+          echo "===== TOPIC OPPORTUNITY SCORING COMPLETE ====="
